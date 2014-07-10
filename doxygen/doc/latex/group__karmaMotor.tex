@@ -1,0 +1,62 @@
+\doxysection{Motor Part of the KARMA Experiment}
+\label{group__karmaMotor}\index{Motor Part of the KARMA Experiment@{Motor Part of the KARMA Experiment}}
+
+
+Motor Control Module that allows the robot to push/draw the object and explore a tool.  
+
+
+Motor Control Module that allows the robot to push/draw the object and explore a tool. 
+
+\hypertarget{group__karmaToolProjection_intro_sec}{}\doxysubsection{Description}\label{group__karmaToolProjection_intro_sec}
+This module aims to control the robot hands in order to properly execute the push and the draw actions of an object within the KARMA experiment to then learn the corresponding affordance. ~\newline
+ It also enable the tool exploration.\hypertarget{group__karmaToolProjection_lib_sec}{}\doxysubsection{Libraries}\label{group__karmaToolProjection_lib_sec}
+
+\begin{DoxyItemize}
+\item YARP libraries.
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_parameters_sec}{}\doxysubsection{Parameters}\label{group__karmaToolProjection_parameters_sec}
+--robot {\itshape robot} 
+\begin{DoxyItemize}
+\item Select the robot to connect to.
+\end{DoxyItemize}
+
+--name {\itshape name} 
+\begin{DoxyItemize}
+\item Select the stem-\/name of the module used to open up ports. By default {\itshape name} is {\itshape karma\+Motor}.
+\end{DoxyItemize}
+
+--elbow\+\_\+set {\itshape ($<$height$>$ $<$weight$>$)}
+\begin{DoxyItemize}
+\item To specify how to weigh the task to keep the elbow high.
+\end{DoxyItemize}\hypertarget{group__karmaToolFinder_portsa_sec}{}\doxysubsection{Ports Accessed}\label{group__karmaToolFinder_portsa_sec}
+Assume that i\+Cub\+Interface (with ICartesian\+Control interface implemented) is running.\hypertarget{group__karmaToolProjection_portsc_sec}{}\doxysubsection{Ports Created}\label{group__karmaToolProjection_portsc_sec}
+
+\begin{DoxyItemize}
+\item {\itshape /karma\+Motor/rpc} receives the information to execute the motor action as a Bottle. It manages the following commands\+:
+\begin{DoxyEnumerate}
+\item {\bfseries{Push}}\+: {\itshape \mbox{[}push\mbox{]} cx cy cz theta radius}. ~\newline
+ The coordinates {\itshape (cx,cy,cz)} represent in meters the position of the object\textquotesingle{}s centroid to be pushed; {\itshape theta}, given in degrees, and {\itshape radius}, specified in meters, account for the point from which push the object, that is located onto the circle centered in {\itshape (cx,cy,cz)} and contained in the x-\/y plane. ~\newline
+ The reply {\itshape \mbox{[}ack\mbox{]}} is returned as soon as the push is accomplished.
+\item {\bfseries{Draw}}\+: {\itshape \mbox{[}draw\mbox{]} cx cy cz theta radius dist}. ~\newline
+ The coordinates {\itshape (cx,cy,cz)} represent in meters the position of the object\textquotesingle{}s centroid to be drawn closer; {\itshape theta}, given in degrees, and {\itshape radius}, specified in meters, account for the point from which draw the object, that is located onto the circle centered in {\itshape (cx,cy,cz)} and contained in the x-\/y plane. The parameter {\itshape dist} specifies the length in meters of the draw action. ~\newline
+ The reply {\itshape \mbox{[}ack\mbox{]}} is returned as soon as the draw is accomplished.
+\item {\bfseries{Virtual draw}}\+: {\itshape \mbox{[}vdraw\mbox{]} cx cy cz theta radius dist}. ~\newline
+ Simulate the draw without performing any movement in order to test the quality of the action. ~\newline
+ The reply {\itshape \mbox{[}ack\mbox{]} val} is returned at the end of the simulation, where {\itshape val} accounts for the quality of the action\+: the lower it is the better the action is.
+\item {\bfseries{Tool-\/attach}}\+: {\itshape \mbox{[}tool\mbox{]} \mbox{[}attach\mbox{]} arm x y z}. ~\newline
+ Attach a tool to the given arm whose dimensions are specified in the frame attached to the hand. The subsequent action will make use of this tool.
+\item {\bfseries{Tool-\/get}}\+: {\itshape \mbox{[}tool\mbox{]} \mbox{[}get\mbox{]}}. ~\newline
+ Retrieve tool information as {\itshape \mbox{[}ack\mbox{]} arm x y z}.
+\item {\bfseries{Tool-\/remove}}\+: {\itshape \mbox{[}tool\mbox{]} \mbox{[}remove\mbox{]}}. ~\newline
+ Remove the attached tool.
+\item {\bfseries{Find}}\+: {\itshape \mbox{[}find\mbox{]} arm eye}. ~\newline
+ An exploration is performed which aims at finding the tool dimension. It is possible to select the arm for executing the movement as well as the eye from which the motion is observed. The reply {\itshape \mbox{[}ack\mbox{]} x y z} returns the tool\textquotesingle{}s dimensions with respect to reference frame attached to the robot hand.
+\end{DoxyEnumerate}
+\item {\itshape /karma\+Motor/stop}\+:i receives request for immediate stop of any ongoing processing.
+\item {\itshape /karma\+Motor/vision}\+:i receives the information about the pixel corresponding to the tool tip during the tool exploration phase.
+\item {\itshape /karma\+Motor/finder}\+:rpc communicates with the module in charge of solving for the tool\textquotesingle{}s dimensions.
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_tested_os_sec}{}\doxysubsection{Tested OS}\label{group__karmaToolProjection_tested_os_sec}
+Windows, Linux
+
+\begin{DoxyAuthor}{Author}
+Ugo Pattacini 
+\end{DoxyAuthor}

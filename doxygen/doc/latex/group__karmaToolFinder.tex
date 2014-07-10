@@ -1,0 +1,71 @@
+\doxysection{Tool Solver Part of the KARMA Experiment}
+\label{group__karmaToolFinder}\index{Tool Solver Part of the KARMA Experiment@{Tool Solver Part of the KARMA Experiment}}
+
+
+This module finds the tool dimension employing nonlinear optimization.  
+
+
+This module finds the tool dimension employing nonlinear optimization. 
+
+\hypertarget{group__karmaToolProjection_intro_sec}{}\doxysubsection{Description}\label{group__karmaToolProjection_intro_sec}
+Through an active exploration of the tool held in the robot hand a set of relevant data is collected, including hand position in 3D space, eye\textquotesingle{}s frame and pixels of the tool tip as acquired by vision algorithms. A nonlinear optimization is then exploited to find out the best estimate of the tool dimensions with respect to the hand reference frame.\hypertarget{group__karmaToolProjection_lib_sec}{}\doxysubsection{Libraries}\label{group__karmaToolProjection_lib_sec}
+
+\begin{DoxyItemize}
+\item YARP libraries.
+\item IPOPT library.
+\item Open\+CV library. ~\newline
+
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_parameters_sec}{}\doxysubsection{Parameters}\label{group__karmaToolProjection_parameters_sec}
+--robot {\itshape robot} 
+\begin{DoxyItemize}
+\item Select the robot to connect to.
+\end{DoxyItemize}
+
+--name {\itshape name} 
+\begin{DoxyItemize}
+\item Select the stem-\/name of the module used to open up ports. By default {\itshape name} is {\itshape karma\+Tool\+Finder}.
+\end{DoxyItemize}
+
+--arm {\itshape type} 
+\begin{DoxyItemize}
+\item Select the default arm (\char`\"{}left\char`\"{} or \char`\"{}right\char`\"{}) used for the data acquisition.
+\end{DoxyItemize}
+
+--eye {\itshape type} 
+\begin{DoxyItemize}
+\item Select the default eye (\char`\"{}left\char`\"{} or \char`\"{}right\char`\"{}) used for the data acquisition.
+\end{DoxyItemize}\hypertarget{group__karmaToolFinder_portsa_sec}{}\doxysubsection{Ports Accessed}\label{group__karmaToolFinder_portsa_sec}
+Assume that i\+Cub\+Interface (with ICartesian\+Control interface implemented) is running.\hypertarget{group__karmaToolProjection_portsc_sec}{}\doxysubsection{Ports Created}\label{group__karmaToolProjection_portsc_sec}
+
+\begin{DoxyItemize}
+\item {\itshape /karma\+Tool\+Finder/rpc} receives the information to manage the data acquisition and optimization phase\+:
+\begin{DoxyEnumerate}
+\item {\bfseries{Enable}}\+: {\itshape \mbox{[}enable\mbox{]}}. ~\newline
+ Start the data acquisition phase.
+\item {\bfseries{Disable}}\+: {\itshape \mbox{[}disable\mbox{]}}. ~\newline
+ Terminate the data acquisition phase.
+\item {\bfseries{Num}}\+: {\itshape \mbox{[}num\mbox{]}}. ~\newline
+ Retrieve the current number of input-\/output pairs used for the optimization. The reply is {\itshape \mbox{[}ack\mbox{]} num}.
+\item {\bfseries{Clear}}\+: {\itshape \mbox{[}clear\mbox{]}}. ~\newline
+ Clear the current content of input-\/output pairs database.
+\item {\bfseries{Select}}\+: {\itshape \mbox{[}select\mbox{]} arm eye}. ~\newline
+ Select the robot sources in terms of arm and eye used during the data acquisition.
+\item {\bfseries{Find}}\+: {\itshape \mbox{[}find\mbox{]}}. ~\newline
+ Execute the optimization over the current database of input-\/output pairs. The reply is {\itshape \mbox{[}ack\mbox{]} x y z} including the tool dimensions given wrt hand reference frame.
+\item {\bfseries{Show}}\+: {\itshape \mbox{[}show\mbox{]} x y z}. ~\newline
+ Enable the visualization of a tool with the dimensions specified by the user. The reply is {\itshape \mbox{[}ack\mbox{]}} or {\itshape \mbox{[}nack\mbox{]}}.
+\item {\bfseries{Tip}}\+: {\itshape \mbox{[}tip\mbox{]}}. ~\newline
+ Retrieve the tool tip as projected in the image plane. The reply is {\itshape \mbox{[}ack\mbox{]} u v} or {\itshape \mbox{[}nack\mbox{]}}.
+\end{DoxyEnumerate}
+\item {\itshape /karma\+Tool\+Finder/in} receives the position of the tool tip in the image plane.
+\begin{DoxyItemize}
+\item {\itshape /karma\+Tool\+Finder/img}\+:i receives images from the camera.
+\item {\itshape /karma\+Tool\+Finder/img}\+:o streams out images with superimposed information on the tool.
+\item {\itshape /karma\+Tool\+Finder/log}\+:o streams out a complete set of data used during the acquisition.
+\end{DoxyItemize}
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_tested_os_sec}{}\doxysubsection{Tested OS}\label{group__karmaToolProjection_tested_os_sec}
+Windows, Linux
+
+\begin{DoxyAuthor}{Author}
+Ugo Pattacini 
+\end{DoxyAuthor}

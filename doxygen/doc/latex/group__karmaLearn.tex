@@ -1,0 +1,64 @@
+\doxysection{Learning module of the KARMA Experiment}
+\label{group__karmaLearn}\index{Learning module of the KARMA Experiment@{Learning module of the KARMA Experiment}}
+
+
+Machine Learning Module that allows the robot to learn online and predict a one-\/to-\/one map.  
+
+
+Machine Learning Module that allows the robot to learn online and predict a one-\/to-\/one map. 
+
+\hypertarget{group__karmaToolProjection_intro_sec}{}\doxysubsection{Description}\label{group__karmaToolProjection_intro_sec}
+This module belongs to the suite of KARMA software and is responsible for learning a generic map from $ R $ to $ R $.\hypertarget{group__karmaToolProjection_lib_sec}{}\doxysubsection{Libraries}\label{group__karmaToolProjection_lib_sec}
+
+\begin{DoxyItemize}
+\item YARP libraries.
+\item learning\+Machine library.
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_parameters_sec}{}\doxysubsection{Parameters}\label{group__karmaToolProjection_parameters_sec}
+--context {\itshape context} 
+\begin{DoxyItemize}
+\item To specify the module\textquotesingle{}s context.
+\end{DoxyItemize}
+
+--from {\itshape file} 
+\begin{DoxyItemize}
+\item To specify the module\textquotesingle{}s configuration file.
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_portsc_sec}{}\doxysubsection{Ports Created}\label{group__karmaToolProjection_portsc_sec}
+
+\begin{DoxyItemize}
+\item {\itshape /karma\+Learn/rpc} remote procedure call. ~\newline
+ Recognized remote commands\+:
+\begin{DoxyItemize}
+\item \mbox{[}train\mbox{]} \char`\"{}item\char`\"{} $<$in$>$ $<$out$>$\+: issue the module to train internal machines with the input-\/output pair for the given item. The reply is \mbox{[}nack\mbox{]}/\mbox{[}ack\mbox{]}.
+\item \mbox{[}predict\mbox{]} \char`\"{}item\char`\"{} $<$in$>$\+: retrieve the predicted output for the specified input. The reply is \mbox{[}nack\mbox{]}/\mbox{[}ack\mbox{]} $<$out$>$ $<$variance$>$, where the variance is meaningful only if not negative. In case the input command is of the form \mbox{[}predict\mbox{]} \char`\"{}item\char`\"{} ($<$in0$>$ $<$in1$>$ ...), the prediction is returned for the values contained in the list and the reply will look like \href{out0> <out1> ...}{\texttt{ ack}} ($<$variance0$>$ $<$variance1$>$ ...).
+\item \mbox{[}span\mbox{]} \char`\"{}item\char`\"{} $<$step$>$\+: retrieve the predicted output for a given range of input specified by the parameter step. The reply is \mbox{[}nack\mbox{]}/\href{out0> <out1> ...}{\texttt{ ack}} ($<$variance0$>$ $<$variance1$>$ ...). The second parameter can be omitted and an internal default step size is used.
+\item \mbox{[}optimize\mbox{]} \char`\"{}item\char`\"{} \mbox{[}$<$step$>$\mbox{]}$\vert$\mbox{[}($<$val0$>$ $<$val1$>$ ...)\mbox{]}\+: for the specified item a search with the given step, or alternatively over the given list of input values, is performed in order to find out the input that elicits the maximum output. The reply is \mbox{[}nack\mbox{]}/\mbox{[}ack\mbox{]} $<$in$>$ $<$out$>$. The second parameter can be omitted and an internal default step size is used.
+\item \mbox{[}items\mbox{]}\+: retrieve the name of the items currently handled by the module.
+\item \mbox{[}machine\mbox{]} \char`\"{}item\char`\"{}\+: retrieve the content of the machine contained within the database that serves to represent the input-\/output relation of the given item.
+\item \mbox{[}clear\mbox{]} \char`\"{}item\char`\"{}\+: remove the item from the internal machines database. If no argument is given, clean up the whole database content. The reply is \mbox{[}nack\mbox{]}/\mbox{[}ack\mbox{]}.
+\item \mbox{[}save\mbox{]}\+: save the content of the internal machines database within the configuration file. The reply is \mbox{[}ack\mbox{]}.
+\item \mbox{[}plot\mbox{]} \char`\"{}item\char`\"{} $<$step$>$\+: stream out a yarp image displaying the map learned for the specified item as computed over the domain explored with the given step.
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+{\itshape /karma\+Learn/plot}\+:o streams out images containing the learned maps.\hypertarget{group__karmaLearn_conf_file_sec}{}\doxysubsection{Configuration Files}\label{group__karmaLearn_conf_file_sec}
+The configuration file passed through the option {\itshape --from} looks like as follows\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{[general]}
+\DoxyCodeLine{name      karmaLearn    \textcolor{comment}{// the module's stem-\/name}}
+\DoxyCodeLine{num\_items 0             \textcolor{comment}{// the number of items }}
+\DoxyCodeLine{in\_lb     0.0           \textcolor{comment}{// scaler lower bound in}}
+\DoxyCodeLine{in\_ub     360.0         \textcolor{comment}{// scaler upper bound in }}
+\DoxyCodeLine{out\_lb    0.0           \textcolor{comment}{// scaler lower bound out}}
+\DoxyCodeLine{out\_ub    2.0           \textcolor{comment}{// scaler upper bound out}}
+
+\end{DoxyCode}
+
+
+Moreover, once some learning has been carried out, the configuration file will be filled with the sections corresponding to the items.\hypertarget{group__karmaToolProjection_tested_os_sec}{}\doxysubsection{Tested OS}\label{group__karmaToolProjection_tested_os_sec}
+Windows, Linux
+
+\begin{DoxyAuthor}{Author}
+Ugo Pattacini 
+\end{DoxyAuthor}

@@ -1,0 +1,29 @@
+\doxysection{Tool Projection Part of the KARMA Experiment}
+\label{group__karmaToolProjection}\index{Tool Projection Part of the KARMA Experiment@{Tool Projection Part of the KARMA Experiment}}
+
+
+This module finds the tooltip using motion\+CUT.  
+
+
+This module finds the tooltip using motion\+CUT. 
+
+\hypertarget{group__karmaToolProjection_intro_sec}{}\doxysubsection{Description}\label{group__karmaToolProjection_intro_sec}
+Through an active exploration of the tool held in the robot hand this module extract a set of points for the tooltip location in the image.\hypertarget{group__karmaToolProjection_lib_sec}{}\doxysubsection{Libraries}\label{group__karmaToolProjection_lib_sec}
+
+\begin{DoxyItemize}
+\item YARP libraries.
+\item Open\+CV library.
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_parameters_sec}{}\doxysubsection{Parameters}\label{group__karmaToolProjection_parameters_sec}
+none\hypertarget{group__karmaToolProjection_portsc_sec}{}\doxysubsection{Ports Created}\label{group__karmaToolProjection_portsc_sec}
+
+\begin{DoxyItemize}
+\item {\itshape /karma\+Tool\+Finder/rpc} not responding to anything.
+\item {\itshape /karma\+Tool\+Projection/motion\+Filter}\+:i receives the data blobs from the motion\+CUT module
+\item {\itshape /karma\+Tool\+Projection/target}\+:o streams the X and Y target points of the tooltip
+\item {\itshape /karma\+Tool\+Projection/img}\+:o streams the image with the image analysis
+\end{DoxyItemize}\hypertarget{group__karmaToolProjection_tested_os_sec}{}\doxysubsection{Tested OS}\label{group__karmaToolProjection_tested_os_sec}
+Windows, Linux, Mac\+OS
+
+\begin{DoxyAuthor}{Author}
+Vadim Tikhanoff 
+\end{DoxyAuthor}
