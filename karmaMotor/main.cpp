@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -15,41 +15,55 @@
  * Public License for more details
 */
 
-/** 
+/**
 \defgroup karmaMotor Motor Part of the KARMA Experiment
- 
-Motor Control Module that allows the robot to push/draw the 
-object and explore a tool. 
 
-\section intro_sec Description 
+Motor Control Module that allows the robot to push/draw the
+object and explore a tool.
+
+\section intro_sec Description
 This module aims to control the robot hands in order to properly
-execute the push and the draw actions of an object within the 
-KARMA experiment to then learn the corresponding affordance. \n 
-It also enable the tool exploration. 
- 
-\section lib_sec Libraries 
-- YARP libraries. 
+execute the push and the draw actions of an object within the
+KARMA experiment to then learn the corresponding affordance. \n
+It also enable the tool exploration.
+
+\section lib_sec Libraries
+- YARP libraries.
 - icubmod library.
 
-\section parameters_sec Parameters 
+\section parameters_sec Parameters
 --robot \e robot
 - Select the robot to connect to.
 
 --name \e name
-- Select the stem-name of the module used to open up ports. 
+- Select the stem-name of the module used to open up ports.
   By default \e name is <i>karmaMotor</i>.
- 
+
 --elbow_set <i>(<height> <weight>)</i>
 - To specify how to weigh the task to keep the elbow high.
- 
+
+--movTime \e movTime
+- Time duration for the horizontal hand pose (pronation) pushing and draw actions.
+
 \section portsa_sec Ports Accessed
 Assume that iCubInterface (with ICartesianControl interface
-implemented) is running. 
- 
-\section portsc_sec Ports Created 
-- \e /karmaMotor/rpc receives the information to execute the 
+implemented) is running.
+
+\section portsc_sec Ports Created
+- \e /karmaMotor/rpc receives the information to execute the
   motor action as a Bottle. It manages the following commands:
   -# <b>Push</b>: <i>[push] cx cy cz theta radius</i>. \n
+  The coordinates <i>(cx,cy,cz)</i> represent in meters the
+  position of the object's centroid to be pushed; <i>theta</i>,
+  given in degrees, and <i>radius</i>, specified in meters,
+  account for the point from which push the object, that is
+  located onto the circle centered in <i>(cx,cy,cz)</i> and
+  contained in the x-y plane. \n
+  The reply <i>[ack]</i> is returned as soon as the push is
+  accomplished.
+  -# <b>Push</b>: <i>[pusp] pose cx cy cz theta radius</i>. \n
+  The variable <i>pose</i> controls the hand pose during action,
+  0 for neutral pose, 1 for hand in pronation;
   The coordinates <i>(cx,cy,cz)</i> represent in meters the
   position of the object's centroid to be pushed; <i>theta</i>,
   given in degrees, and <i>radius</i>, specified in meters,
@@ -74,10 +88,28 @@ implemented) is running.
    The reply <i>[ack] val</i> is returned at the end of the
    simulation, where <i>val</i> accounts for the quality of the
    action: the lower it is the better the action is.
+   -# <b>Draw</b>: <i>[drap] pose cx cy cz theta radius dist</i>. \n
+  The variable <i>pose</i> controls the hand pose during action,
+  0 for neutral pose, 1 for hand in pronation;
+  The coordinates <i>(cx,cy,cz)</i> represent in meters the
+  position of the object's centroid to be drawn closer;
+  <i>theta</i>, given in degrees, and <i>radius</i>, specified
+  in meters, account for the point from which draw the object,
+  that is located onto the circle centered in <i>(cx,cy,cz)</i>
+  and contained in the x-y plane. The parameter <i>dist</i>
+  specifies the length in meters of the draw action. \n
+  The reply <i>[ack]</i> is returned as soon as the draw is
+  accomplished.
   -# <b>Tool-attach</b>: <i>[tool] [attach] arm x y z</i>. \n
   Attach a tool to the given arm whose dimensions are specified
   in the frame attached to the hand. The subsequent action will
   make use of this tool.
+  -# <b>Tool-attach</b>: <i>[toop] [attach] arm x y z</i>. \n
+  An alternative method to attach a tool to the given arm whose
+  dimensions are specified in the frame attached to the hand,
+  the reference frame attached to the tool is the same as
+  the hand reference frame simply translated to the tool tip.
+  The subsequent action will make use of this tool.
   -# <b>Tool-get</b>: <i>[tool] [get]</i>. \n
   Retrieve tool information as <i>[ack] arm x y z</i>.
   -# <b>Tool-remove</b>: <i>[tool] [remove]</i>. \n
@@ -88,22 +120,22 @@ implemented) is running.
   movement as well as the eye from which the motion is observed.
   The reply <i>[ack] x y z</i> returns the tool's dimensions
   with respect to reference frame attached to the robot hand.
- 
+
 - \e /karmaMotor/stop:i receives request for immediate stop of
   any ongoing processing.
- 
-- \e /karmaMotor/vision:i receives the information about the 
+
+- \e /karmaMotor/vision:i receives the information about the
   pixel corresponding to the tool tip during the tool
   exploration phase.
- 
-- \e /karmaMotor/finder:rpc communicates with the module in 
+
+- \e /karmaMotor/finder:rpc communicates with the module in
   charge of solving for the tool's dimensions.
- 
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 \author Ugo Pattacini
-*/ 
+*/
 
 #include <stdio.h>
 #include <string>
@@ -148,6 +180,7 @@ protected:
     bool interrupting;
     double flip_hand;
     int shake_joint;
+    double mov_time;
 
     bool elbow_set;
     double elbow_height,elbow_weight;
@@ -310,6 +343,94 @@ protected:
             }
 
             //-----------------
+            case VOCAB4('p','u','s','p'):
+            {
+                Bottle payload=command.tail();
+                if (payload.size()>=6)
+                {
+                    int pose;
+                    Vector c(3);
+                    double theta;
+                    double radius;
+
+                    pose=payload.get(0).asInt();
+                    c[0]=payload.get(1).asDouble();
+                    c[1]=payload.get(2).asDouble();
+                    c[2]=payload.get(3).asDouble();
+                    theta=payload.get(4).asDouble();
+                    radius=payload.get(5).asDouble();
+
+                    push2(pose,c,theta,radius,pushHand,toolFrame);
+                    reply.addVocab(ack);
+                }
+
+                break;
+            }
+
+            //-----------------
+            case VOCAB4('d','r','a','p'):
+            case VOCAB4('v','d','r','p'):
+            {
+                Bottle payload=command.tail();
+                if (payload.size()>=7)
+                {
+                    int pose;
+                    Vector c(3);
+                    double theta;
+                    double radius;
+                    double dist;
+
+                    pose=payload.get(0).asDouble();
+                    c[0]=payload.get(1).asDouble();
+                    c[1]=payload.get(2).asDouble();
+                    c[2]=payload.get(3).asDouble();
+                    theta=payload.get(4).asDouble();
+                    radius=payload.get(5).asDouble();
+                    dist=payload.get(6).asDouble();
+
+                    double res=draw2(cmd==VOCAB4('v','d','r','p'),pose,c,theta,
+                                     radius,dist,pushHand,toolFrame);
+
+                    reply.addVocab(ack);
+                    if (cmd==VOCAB4('v','d','r','p'))
+                        reply.addDouble(res);
+                }
+
+                break;
+            }
+
+            //-----------------
+            case VOCAB4('t','o','o','p'):
+            {
+                if (command.size()>1)
+                {
+                    Bottle subcommand=command.tail();
+                    int tag=subcommand.get(0).asVocab();
+                    if (tag==Vocab::encode("attach"))
+                    {
+                        Bottle payload=subcommand.tail();
+                        if (payload.size()>=4)
+                        {
+                            pushHand=payload.get(0).asString().c_str();
+
+                            Vector point(4);
+                            point[0]=payload.get(1).asDouble();
+                            point[1]=payload.get(2).asDouble();
+                            point[2]=payload.get(3).asDouble();
+                            point[3]=1.0;
+
+                            toolFrame.eye();
+                            toolFrame.setCol(3,point);
+
+                            reply.addVocab(ack);
+                        }
+                    }
+                }
+
+                break;
+            }
+
+            //-----------------
             default:
                 interrupting=false;
                 return RFModule::respond(command,reply);
@@ -324,7 +445,7 @@ protected:
     {
         if (elbow_set)
         {
-            Bottle tweakOptions; 
+            Bottle tweakOptions;
             Bottle &optTask2=tweakOptions.addList();
             optTask2.addString("task_2");
             Bottle &plTask2=optTask2.addList();
@@ -379,14 +500,14 @@ protected:
         Matrix H1eps=H1; Matrix H2eps=H2;
         H1eps(0,3)+=epsilon*_c; H1eps(1,3)+=epsilon*_s;
         H2eps(0,3)+=epsilon*_c; H2eps(1,3)+=epsilon*_s;
-        
+
         // go back into root frame and apply tool (if any)
         Matrix invFrame=SE3inv(frame);
         H1=H0*H1*invFrame;
         H2=H0*H2*invFrame;
         H1eps=H0*H1eps*invFrame;
         H2eps=H0*H2eps*invFrame;
-        
+
         Vector xd1=H1.getCol(3).subVector(0,2);
         Vector od1=dcm2axis(H1);
 
@@ -429,7 +550,7 @@ protected:
 
         Vector dof;
         iCartCtrl->getDOF(dof);
-        
+
         dof=1.0; dof[1]=0.0;
         iCartCtrl->setDOF(dof,dof);
 
@@ -571,7 +692,221 @@ protected:
             iCartCtrl->goToPoseSync(*xd,*od,1.0);
             iCartCtrl->waitMotionDone(0.1,2.0);
         }
-        
+
+        iCartCtrl->restoreContext(context);
+        iCartCtrl->deleteContext(context);
+    }
+
+    /************************************************************************/
+    void push2(const int pose, const Vector &c, const double theta, const double radius,
+              const string &armType="selectable", const Matrix &frame=eye(4,4))
+    {
+
+        double theta_rad = CTRL_DEG2RAD*theta;
+        double _c = cos(theta_rad);
+        double _s = sin(theta_rad);
+        double _theta = CTRL_RAD2DEG*atan2(_s,_c);    // to have theta in [-180.0,180.0]
+
+
+        // Transformation: Object frame to Robot frame, translation of origin from object to robot frame.
+        Matrix O2R(4,4); O2R.eye();
+        O2R(0,3) = c[0];    //x
+        O2R(1,3) = c[1];    //y
+        O2R(2,3) = c[2];    //z
+
+
+        // Transformation: Target Position frame to Object frame, translation of origin from target position to object frame.
+        // target position located at cylindrical coordinates (radius,theta,offZ) in the Object frame
+        // P1'->P1->P2->P1
+        //      End-effector is placed at P1' above the acting position P1
+        //      Lowered into acting position P1
+        //      Moved to P2, thus performing the pushing action
+        //      Moded back to P1 position
+
+        // P1', First target position, situated above P1 so that the end-effector does not collide with the object
+        double offZ = 0.1;
+        double alfa_rad = CTRL_DEG2RAD*(_theta+0);
+        double magn = radius;
+
+        Matrix P2O0(4,4); P2O0.eye();
+        P2O0(0,3) = cos(alfa_rad)*magn;
+        P2O0(1,3) = sin(alfa_rad)*magn;
+        P2O0(2,3) = offZ;
+
+        // P1, second target position, starting position for the pushing action
+        offZ = 0;
+        alfa_rad = CTRL_DEG2RAD*(_theta+0);
+        magn = radius;
+
+        Matrix P2O1(4,4); P2O1.eye();
+        P2O1(0,3) = cos(alfa_rad)*magn;
+        P2O1(1,3) = sin(alfa_rad)*magn;
+        P2O1(2,3) = offZ;
+
+        // P2, third target position, where the end effector moves during the pushing action
+        offZ = 0;
+        alfa_rad = CTRL_DEG2RAD*(_theta+180);
+        magn = radius;
+
+        Matrix P2O2(4,4); P2O2.eye();
+        P2O2(0,3) = cos(alfa_rad)*magn;
+        P2O2(1,3) = sin(alfa_rad)*magn;
+        P2O2(2,3) = offZ;
+
+        // P3, fourth target position, where the end effector moves after the pushing action
+        offZ = 0.1;
+        alfa_rad = CTRL_DEG2RAD*(_theta+180);
+        magn = radius;
+
+        Matrix P2O3(4,4); P2O3.eye();
+        P2O3(0,3) = cos(alfa_rad)*magn;
+        P2O3(1,3) = sin(alfa_rad)*magn;
+        P2O3(2,3) = offZ;
+
+
+        // Transformations: Hand frame to Target Position frame, Defines several possible orientations of both hands (only rotation, no translation)
+        // Hand in a rotation neutral pose can be set with the palm or back of the hand towards the object
+        // Hand in a pronation pose can be set with the top or bottom edge of the hand towards the object
+
+
+        Matrix H2PL1(4,4); H2PL1.zero();    // Left Hand, Palm or Top
+        Matrix H2PL2(4,4); H2PL2.zero();    // Left Hand, Back or Bottom
+        Matrix H2PR1(4,4); H2PR1.zero();    // Right Hand, Palm or Top
+        Matrix H2PR2(4,4); H2PR2.zero();    // Right Hand, Back or Bottom
+        Matrix H2P(4,4);  H2P.zero();       // Choosen Hand
+
+        //pose=0 rotation=neutral | pose=1 rotation=pronation
+        float psi = -30;
+        float fi = 0;
+        if ((armType == "selectable" && c[1] >= 0.0) || armType == "right")
+        {
+            iCartCtrl = iCartCtrlR;
+            fi = 120;
+        }
+        else if ((armType == "selectable" && c[1] < 0.0) || armType == "left")
+        {
+            iCartCtrl = iCartCtrlL;
+            fi =  -120;
+        }
+
+        if (pose==0)
+        {
+            fi = 0;
+            psi = -50;
+        }
+
+        Matrix  A(4,4);  A.zero();
+        Matrix Ax(4,4); Ax.zero();
+        Matrix Az(4,4); Az.zero();
+        Matrix HR(4,4); HR.zero();
+
+        float fi_rad  = CTRL_DEG2RAD*fi;
+        float psi_rad = CTRL_DEG2RAD*psi;
+
+        Ax(0,0) = 1;
+        Ax(1,1) =  cos(fi_rad); Ax(1,2) = sin(fi_rad);
+        Ax(2,1) = -sin(fi_rad); Ax(2,2) = cos(fi_rad);
+        Ax(3,3) = 1;
+
+        Az(0,0) =  cos(psi_rad); Az(0,1) = sin(psi_rad);
+        Az(1,0) = -sin(psi_rad); Az(1,1) = cos(psi_rad);
+        Az(2,2) = 1;
+        Az(3,3) = 1;
+
+        HR(0,0) = -1;
+        HR(1,2) = -1;
+        HR(2,1) = -1;
+        HR(3,3) =  1;
+
+        H2P = HR*Ax*Az;
+
+        // Transformation: Tool frame to Hand frame. Translation of origin from tool tip to hand palm center
+        Matrix T2H(4,4);
+        T2H = SE3inv(frame);
+
+        // Transformation: Tool frame to robot frame, its the combination off all the single transformations
+        Matrix T2R(4,4); T2R.zero();
+
+        T2R = O2R*P2O1*H2P;
+
+        Vector xd1 = T2R.getCol(3).subVector(0,2);
+        Vector od1 = dcm2axis(T2R);
+
+        printf("in-place locations...\n");
+        printf("xd1=(%s) od1=(%s)\n",xd1.toString(3,3).c_str(),od1.toString(3,3).c_str());
+
+        T2R = T2R*T2H;
+
+        xd1 = T2R.getCol(3).subVector(0,2);
+        od1 = dcm2axis(T2R);
+
+        printf("apply tool (if any)...\n");
+        printf("xd1=(%s) od1=(%s)\n",xd1.toString(3,3).c_str(),od1.toString(3,3).c_str());
+
+        // deal with the arm context
+        int context;
+        iCartCtrl->storeContext(&context);
+
+        Bottle options;
+        Bottle &straightOpt = options.addList();
+        straightOpt.addString("straightness");
+        straightOpt.addDouble(10.0);
+        iCartCtrl->tweakSet(options);
+        //changeElbowHeight();
+
+        Vector dof;
+        iCartCtrl->getDOF(dof);
+
+        dof=1.0; dof[1]=0.0;
+        iCartCtrl->setDOF(dof,dof);
+
+        // execute the movement
+        Vector xd;
+        Vector od;
+        if (!interrupting)
+        {
+            T2R = O2R*P2O0*H2P*T2H;
+            xd = T2R.getCol(3).subVector(0,2);
+            od = dcm2axis(T2R);
+
+            printf("moving to: x=(%s); o=(%s)\n",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
+            iCartCtrl->goToPoseSync(xd,od,1.0);
+            iCartCtrl->waitMotionDone(0.1,4.0);
+        }
+
+        if (!interrupting)
+        {
+            T2R = O2R*P2O1*H2P*T2H;
+            xd = T2R.getCol(3).subVector(0,2);
+            od = dcm2axis(T2R);
+
+            printf("moving to: x=(%s); o=(%s)\n",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
+            iCartCtrl->goToPoseSync(xd,od,1.0);
+            iCartCtrl->waitMotionDone(0.1,4.0);
+        }
+
+        if (!interrupting)
+        {
+            T2R = O2R*P2O2*H2P*T2H;
+            xd = T2R.getCol(3).subVector(0,2);
+            od = dcm2axis(T2R);
+
+            printf("moving to: x=(%s); o=(%s)\n",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
+            iCartCtrl->goToPoseSync(xd,od,mov_time);
+            iCartCtrl->waitMotionDone(0.1,3.0);
+        }
+
+        if (!interrupting)
+        {
+            T2R = O2R*P2O3*H2P*T2H;
+            xd = T2R.getCol(3).subVector(0,2);
+            od = dcm2axis(T2R);
+
+            printf("moving to: x=(%s); o=(%s)\n",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
+            iCartCtrl->goToPoseSync(xd,od,1.0);
+            iCartCtrl->waitMotionDone(0.1,2.0);
+        }
+
         iCartCtrl->restoreContext(context);
         iCartCtrl->deleteContext(context);
     }
@@ -711,7 +1046,7 @@ protected:
 
         dof=1.0; dof[1]=0.0;
         iCartCtrl->setDOF(dof,dof);
-        
+
         double res=0.0;
 
         // simulate the movements
@@ -775,6 +1110,227 @@ protected:
     }
 
     /************************************************************************/
+    double draw2(bool simulation, const int pose, const Vector &c, const double theta, const double radius,
+                const double dist, const string &armType, const Matrix &frame=eye(4,4))
+    {
+        // c0 is the projection of c on the sagittal plane
+        Vector c_sag=c;
+        c_sag[1]=0.0;
+
+        // wrt root frame: frame centered at c_sag with x-axis pointing rightward,
+        // y-axis pointing forward and z-axis pointing upward
+        Matrix H0(4,4); H0.zero();
+        H0(1,0)=1.0;
+        H0(0,1)=-1.0;
+        H0(2,2)=1.0;
+        H0(0,3)=c_sag[0]; H0(1,3)=c_sag[1]; H0(2,3)=c_sag[2]; H0(3,3)=1.0;
+
+        double theta_rad=CTRL_DEG2RAD*(theta-90);
+        double _c=cos(theta_rad);
+        double _s=sin(theta_rad);
+
+        // wrt H0 frame: frame translated in R*[_c,_s]
+        Matrix H1=eye(4,4);
+        H1(0,3)=radius*_c; H1(1,3)=radius*_s;
+
+        // wrt H1 frame: frame translated in [0,-dist]
+        Matrix H2=eye(4,4);
+        H2(1,3)=-dist;
+
+        // go back into root frame
+        H2=H0*H1*H2;
+        H1=H0*H1;
+
+        // choose the arm
+        if (armType=="selectable") {
+            if (c[1]>=0.0)
+                iCartCtrl=iCartCtrlR;
+            else
+                iCartCtrl=iCartCtrlL;
+        }
+        else if (armType=="left")
+            iCartCtrl=iCartCtrlL;
+        else
+            iCartCtrl=iCartCtrlR;
+
+
+        // apply final axes
+        Matrix R(3,3);
+        //pose=0 rotation=neutral | pose=1 rotation=pronation
+        float fi  = 0;
+        float psi = -30;
+        if (iCartCtrl==iCartCtrlR) {
+            if (pose==0) {
+                fi  = 0;
+                psi = -50;
+            }
+            else {
+                fi  = 120;
+                psi = -30;
+            }
+        }
+        else {
+            if (pose==0) {
+                fi  = 0;
+                psi = -50;
+            }
+            else {
+                fi  =  -120;
+                psi = -30;
+            }
+        }
+
+        Matrix  A(3,3);  A.zero();
+        Matrix Ax(3,3); Ax.zero();
+        Matrix Az(3,3); Az.zero();
+        Matrix HR(3,3); HR.zero();
+
+        float fi_rad  = CTRL_DEG2RAD*fi;
+        float psi_rad = CTRL_DEG2RAD*psi;
+
+        Ax(0,0) = 1;
+        Ax(1,1) =  cos(fi_rad); Ax(1,2) = sin(fi_rad);
+        Ax(2,1) = -sin(fi_rad); Ax(2,2) = cos(fi_rad);
+
+        Az(0,0) =  cos(psi_rad); Az(0,1) = sin(psi_rad);
+        Az(1,0) = -sin(psi_rad); Az(1,1) = cos(psi_rad);
+        Az(2,2) = 1;
+
+        HR(0,0) = -1;
+        HR(1,2) = -1;
+        HR(2,1) = -1;
+
+        R = HR*Ax*Az;
+
+        H1.setSubmatrix(R,0,0);
+        H2.setSubmatrix(R,0,0);
+
+        Vector xd1=H1.getCol(3).subVector(0,2);
+        Vector od1=dcm2axis(H1);
+
+        Vector xd2=H2.getCol(3).subVector(0,2);
+        Vector od2=dcm2axis(H2);
+
+        printf("identified locations on the sagittal plane...\n");
+        printf("xd1=(%s) od1=(%s)\n",xd1.toString(3,3).c_str(),od1.toString(3,3).c_str());
+
+        // recover the original place: do translation and rotation
+        if (c[1]!=0.0) {
+            Vector r(4,0.0);
+            r[2]=-1.0;
+            r[3]=0;//atan2(c[1],fabs(c[0]));
+            Matrix H=axis2dcm(r);
+
+            H(0,3)=H1(0,3);
+            H(1,3)=H1(1,3)+c[1];
+            H(2,3)=H1(2,3);
+            H1(0,3)=H1(1,3)=H1(2,3)=0.0;
+            H1=H*H1;
+
+            H(0,3)=H2(0,3);
+            H(1,3)=H2(1,3)+c[1];
+            H(2,3)=H2(2,3);
+            H2(0,3)=H2(1,3)=H2(2,3)=0.0;
+            H2=H*H2;
+
+            xd1=H1.getCol(3).subVector(0,2);
+            od1=dcm2axis(H1);
+
+            xd2=H2.getCol(3).subVector(0,2);
+            od2=dcm2axis(H2);
+        }
+
+        printf("in-place locations...\n");
+        printf("xd1=(%s) od1=(%s)\n",xd1.toString(3,3).c_str(),od1.toString(3,3).c_str());
+
+        // apply tool (if any)
+        Matrix invFrame=SE3inv(frame);
+        H1=H1*invFrame;
+        H2=H2*invFrame;
+
+        xd1=H1.getCol(3).subVector(0,2);
+        od1=dcm2axis(H1);
+
+        xd2=H2.getCol(3).subVector(0,2);
+        od2=dcm2axis(H2);
+
+        printf("apply tool (if any)...\n");
+        printf("xd1=(%s) od1=(%s)\n",xd1.toString(3,3).c_str(),od1.toString(3,3).c_str());
+
+        // deal with the arm context
+        int context;
+        iCartCtrl->storeContext(&context);
+
+        Bottle options;
+        Bottle &straightOpt=options.addList();
+        straightOpt.addString("straightness");
+        straightOpt.addDouble(30.0);
+        iCartCtrl->tweakSet(options);
+
+        Vector dof;
+        iCartCtrl->getDOF(dof);
+
+        dof=1.0; dof[1]=0.0;
+        iCartCtrl->setDOF(dof,dof);
+
+        double res=0.0;
+
+        // simulate the movements
+        if (simulation) {
+            Vector xdhat1,odhat1,xdhat2,odhat2,qdhat;
+            iCartCtrl->askForPose(xd1,od1,xdhat1,odhat1,qdhat);
+            iCartCtrl->askForPose(qdhat,xd2,od2,xdhat2,odhat2,qdhat);
+
+            double e_x1=norm(xd1-xdhat1);
+            double e_o1=norm(od1-odhat1);
+            printf("testing x=(%s); o=(%s) => xhat=(%s); ohat=(%s) ... |e_x|=%g; |e_o|=%g\n",
+                   xd1.toString(3,3).c_str(),od1.toString(3,3).c_str(),
+                   xdhat1.toString(3,3).c_str(),odhat1.toString(3,3).c_str(),
+                   e_x1,e_o1);
+
+            double e_x2=norm(xd2-xdhat2);
+            double e_o2=norm(od2-odhat2);
+            printf("testing x=(%s); o=(%s) => xhat=(%s); ohat=(%s) ... |e_x|=%g; |e_o|=%g\n",
+                   xd2.toString(3,3).c_str(),od2.toString(3,3).c_str(),
+                   xdhat2.toString(3,3).c_str(),odhat2.toString(3,3).c_str(),
+                   e_x2,e_o2);
+
+            double nearness_penalty=(norm(xdhat2)<0.15?10.0:0.0);
+            printf("nearness penalty=%g\n",nearness_penalty);
+            res=e_x1+e_o1+e_x2+e_o2+nearness_penalty;
+            printf("final quality=%g\n",res);
+        }
+        // execute the movements
+        else {
+            Vector offs(3,0.0); offs[2]=0.05;
+            if (!interrupting) {
+                Vector x=xd1+offs;
+
+                printf("moving to: x=(%s); o=(%s)\n",x.toString(3,3).c_str(),od1.toString(3,3).c_str());
+                iCartCtrl->goToPoseSync(x,od1,2.0);
+                iCartCtrl->waitMotionDone(0.1,5.0);
+            }
+
+            if (!interrupting) {
+                printf("moving to: x=(%s); o=(%s)\n",xd1.toString(3,3).c_str(),od1.toString(3,3).c_str());
+                iCartCtrl->goToPoseSync(xd1,od1,1.5);
+                iCartCtrl->waitMotionDone(0.1,5.0);
+            }
+
+            if (!interrupting) {
+                printf("moving to: x=(%s); o=(%s)\n",xd2.toString(3,3).c_str(),od2.toString(3,3).c_str());
+                iCartCtrl->goToPoseSync(xd2,od2,mov_time); //3.5
+                iCartCtrl->waitMotionDone(0.1,5.0);
+            }
+        }
+
+        iCartCtrl->restoreContext(context);
+        iCartCtrl->deleteContext(context);
+
+        return res;
+    }
+
+    /************************************************************************/
     void shakeHand()
     {
         IEncoders        *ienc;
@@ -822,7 +1378,7 @@ protected:
                   const Vector &xOffset, const int maxItems)
     {
         iGaze->restoreContext(0);
-        
+
         if (!interrupting)
         {
             iGaze->setTrackingMode(true);
@@ -1028,6 +1584,7 @@ public:
         string name=rf.check("name",Value("karmaMotor")).asString().c_str();
         string robot=rf.check("robot",Value("icub")).asString().c_str();
         elbow_set=rf.check("elbow_set");
+        mov_time=rf.check("movTime",Value(1.0)).asDouble();
         if (elbow_set)
         {
             if (Bottle *pB=rf.find("elbow_set").asList())
