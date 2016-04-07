@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -15,38 +15,38 @@
  * Public License for more details
 */
 
-/** 
+/**
 \defgroup karmaMotor Motor Part of the KARMA Experiment
- 
-Motor Control Module that allows the robot to push/draw the 
-object and explore a tool. 
 
-\section intro_sec Description 
+Motor Control Module that allows the robot to push/draw the
+object and explore a tool.
+
+\section intro_sec Description
 This module aims to control the robot hands in order to properly
-execute the push and the draw actions of an object within the 
-KARMA experiment to then learn the corresponding affordance. \n 
-It also enable the tool exploration. 
- 
-\section lib_sec Libraries 
-- YARP libraries. 
+execute the push and the draw actions of an object within the
+KARMA experiment to then learn the corresponding affordance. \n
+It also enable the tool exploration.
 
-\section parameters_sec Parameters 
+\section lib_sec Libraries
+- YARP libraries.
+
+\section parameters_sec Parameters
 --robot \e robot
 - Select the robot to connect to.
 
 --name \e name
-- Select the stem-name of the module used to open up ports. 
+- Select the stem-name of the module used to open up ports.
   By default \e name is <i>karmaMotor</i>.
- 
+
 --elbow_set <i>(<height> <weight>)</i>
 - To specify how to weigh the task to keep the elbow high.
- 
+
 \section portsa_sec Ports Accessed
 Assume that iCubInterface (with ICartesianControl interface
-implemented) is running. 
- 
-\section portsc_sec Ports Created 
-- \e /karmaMotor/rpc receives the information to execute the 
+implemented) is running.
+
+\section portsc_sec Ports Created
+- \e /karmaMotor/rpc receives the information to execute the
   motor action as a Bottle. It manages the following commands:
   -# <b>Push</b>: <i>[push] cx cy cz theta radius</i>. \n
   The coordinates <i>(cx,cy,cz)</i> represent in meters the
@@ -87,22 +87,22 @@ implemented) is running.
   movement as well as the eye from which the motion is observed.
   The reply <i>[ack] x y z</i> returns the tool's dimensions
   with respect to reference frame attached to the robot hand.
- 
+
 - \e /karmaMotor/stop:i receives request for immediate stop of
   any ongoing processing.
- 
-- \e /karmaMotor/vision:i receives the information about the 
+
+- \e /karmaMotor/vision:i receives the information about the
   pixel corresponding to the tool tip during the tool
   exploration phase.
- 
-- \e /karmaMotor/finder:rpc communicates with the module in 
+
+- \e /karmaMotor/finder:rpc communicates with the module in
   charge of solving for the tool's dimensions.
- 
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 \author Ugo Pattacini
-*/ 
+*/
 
 #include <cstdio>
 #include <string>
@@ -183,6 +183,7 @@ protected:
         switch (cmd)
         {
             //-----------------
+            case VOCAB4('v','p','u','s'):
             case VOCAB4('p','u','s','h'):
             {
                 Bottle payload=command.tail();
@@ -198,7 +199,20 @@ protected:
                     theta=payload.get(3).asDouble();
                     radius=payload.get(4).asDouble();
 
+                    if (payload.size()==5)
                     push(c,theta,radius,pushHand,toolFrame);
+                    else if (payload.size()==6)
+                    {
+                        double dist=payload.get(5).asDouble();
+                        double res=draw(cmd==VOCAB4('v','p','u','s'),c,theta,
+                                    radius,dist,pushHand,toolFrame, true);
+
+                        reply.addVocab(ack);
+                        if (cmd==VOCAB4('v','p','u','s'))
+                            reply.addDouble(res);
+
+                    }
+
                     reply.addVocab(ack);
                 }
 
@@ -223,6 +237,7 @@ protected:
                     theta=payload.get(3).asDouble();
                     radius=payload.get(4).asDouble();
                     dist=payload.get(5).asDouble();
+
 
                     double res=draw(cmd==VOCAB4('v','d','r','a'),c,theta,
                                     radius,dist,pushHand,toolFrame);
@@ -321,7 +336,7 @@ protected:
     {
         if (elbow_set)
         {
-            Bottle tweakOptions; 
+            Bottle tweakOptions;
             Bottle &optTask2=tweakOptions.addList();
             optTask2.addString("task_2");
             Bottle &plTask2=optTask2.addList();
@@ -376,14 +391,14 @@ protected:
         Matrix H1eps=H1; Matrix H2eps=H2;
         H1eps(0,3)+=epsilon*_c; H1eps(1,3)+=epsilon*_s;
         H2eps(0,3)+=epsilon*_c; H2eps(1,3)+=epsilon*_s;
-        
+
         // go back into root frame and apply tool (if any)
         Matrix invFrame=SE3inv(frame);
         H1=H0*H1*invFrame;
         H2=H0*H2*invFrame;
         H1eps=H0*H1eps*invFrame;
         H2eps=H0*H2eps*invFrame;
-        
+
         Vector xd1=H1.getCol(3).subVector(0,2);
         Vector od1=dcm2axis(H1);
 
@@ -426,7 +441,7 @@ protected:
 
         Vector dof;
         iCartCtrl->getDOF(dof);
-        
+
         dof=1.0; dof[1]=0.0;
         iCartCtrl->setDOF(dof,dof);
 
@@ -568,14 +583,14 @@ protected:
             iCartCtrl->goToPoseSync(*xd,*od,1.0);
             iCartCtrl->waitMotionDone(0.1,2.0);
         }
-        
+
         iCartCtrl->restoreContext(context);
         iCartCtrl->deleteContext(context);
     }
 
     /************************************************************************/
     double draw(bool simulation, const Vector &c, const double theta, const double radius,
-                const double dist, const string &armType, const Matrix &frame=eye(4,4))
+                const double dist, const string &armType, const Matrix &frame=eye(4,4), bool push=false)
     {
         // c0 is the projection of c on the sagittal plane
         Vector c_sag=c;
@@ -599,7 +614,7 @@ protected:
 
         // wrt H1 frame: frame translated in [0,-dist]
         Matrix H2=eye(4,4);
-        H2(1,3)=-dist;
+        (push)?H2(0,3)=-dist:H2(1,3)=-dist;
 
         // go back into root frame
         H2=H0*H1*H2;
@@ -699,7 +714,7 @@ protected:
 
         dof=1.0; dof[1]=0.0;
         iCartCtrl->setDOF(dof,dof);
-        
+
         double res=0.0;
 
         // simulate the movements
@@ -810,7 +825,7 @@ protected:
                   const Vector &xOffset, const int maxItems)
     {
         iGaze->restoreContext(0);
-        
+
         if (!interrupting)
         {
             iGaze->setTrackingMode(true);
@@ -1172,6 +1187,5 @@ int main(int argc, char *argv[])
     KarmaMotor karmaMotor;
     return karmaMotor.runModule(rf);
 }
-
 
 
