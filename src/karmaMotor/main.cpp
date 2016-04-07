@@ -20,7 +20,6 @@
 
 Motor Control Module that allows the robot to push/draw the
 object and explore a tool.
-
 \section intro_sec Description
 This module aims to control the robot hands in order to properly
 execute the push and the draw actions of an object within the
@@ -29,11 +28,9 @@ It also enable the tool exploration.
 
 \section lib_sec Libraries
 - YARP libraries.
-
 \section parameters_sec Parameters
 --robot \e robot
 - Select the robot to connect to.
-
 --name \e name
 - Select the stem-name of the module used to open up ports.
   By default \e name is <i>karmaMotor</i>.
@@ -100,7 +97,6 @@ implemented) is running.
 
 \section tested_os_sec Tested OS
 Windows, Linux
-
 \author Ugo Pattacini
 */
 
