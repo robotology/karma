@@ -241,8 +241,8 @@ protected:
                 Bottle payload=command.tail();
                 if (payload.size()>=2)
                 {
-                    string arm=payload.get(0).asString().c_str();
-                    string eye=payload.get(1).asString().c_str();
+                    string arm=payload.get(0).asString();
+                    string eye=payload.get(1).asString();
                     Bottle solution;
 
                     if (findToolTip(arm,eye,solution))
@@ -269,7 +269,7 @@ protected:
                         Bottle payload=subcommand.tail();
                         if (payload.size()>=4)
                         {
-                            pushHand=payload.get(0).asString().c_str();
+                            pushHand=payload.get(0).asString();
 
                             Vector point(4);
                             point[0]=payload.get(1).asDouble();
@@ -289,7 +289,7 @@ protected:
                     else if (tag==Vocab::encode("get"))
                     {
                         reply.addVocab(ack);
-                        reply.addString(pushHand.c_str());
+                        reply.addString(pushHand);
                         reply.addDouble(toolFrame(0,3));
                         reply.addDouble(toolFrame(1,3));
                         reply.addDouble(toolFrame(2,3));
@@ -824,7 +824,7 @@ protected:
         iGaze->setEyesTrajTime(1.5);
 
         // put the shaking joint in velocity mode
-        IControlMode2 *imode;
+        IControlMode *imode;
         if (arm=="left")
             driverHL.view(imode);
         else
@@ -930,8 +930,8 @@ protected:
         // solving
         command.clear();
         command.addVocab(Vocab::encode("select"));
-        command.addString(arm.c_str());
-        command.addString(eye.c_str());
+        command.addString(arm);
+        command.addString(eye);
         finderPort.write(command,reply);
 
         Matrix R(4,4);
@@ -1013,8 +1013,8 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
-        string name=rf.check("name",Value("karmaMotor")).asString().c_str();
-        string robot=rf.check("robot",Value("icub")).asString().c_str();
+        string name=rf.check("name",Value("karmaMotor")).asString();
+        string robot=rf.check("robot",Value("icub")).asString();
         elbow_set=rf.check("elbow_set");
         if (elbow_set)
         {
@@ -1032,23 +1032,23 @@ public:
 
         Property optionG("(device gazecontrollerclient)");
         optionG.put("remote","/iKinGazeCtrl");
-        optionG.put("local",("/"+name+"/gaze_ctrl").c_str());
+        optionG.put("local","/"+name+"/gaze_ctrl");
 
         Property optionL("(device cartesiancontrollerclient)");
-        optionL.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
-        optionL.put("local",("/"+name+"/cart_ctrl/left_arm").c_str());
+        optionL.put("remote","/"+robot+"/cartesianController/left_arm");
+        optionL.put("local","/"+name+"/cart_ctrl/left_arm");
 
         Property optionR("(device cartesiancontrollerclient)");
-        optionR.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
-        optionR.put("local",("/"+name+"/cart_ctrl/right_arm").c_str());
+        optionR.put("remote","/"+robot+"/cartesianController/right_arm");
+        optionR.put("local","/"+name+"/cart_ctrl/right_arm");
 
         Property optionHL("(device remote_controlboard)");
-        optionHL.put("remote",("/"+robot+"/left_arm").c_str());
-        optionHL.put("local",("/"+name+"/hand_ctrl/left_arm").c_str());
+        optionHL.put("remote","/"+robot+"/left_arm");
+        optionHL.put("local","/"+name+"/hand_ctrl/left_arm");
 
         Property optionHR("(device remote_controlboard)");
-        optionHR.put("remote",("/"+robot+"/right_arm").c_str());
-        optionHR.put("local",("/"+name+"/hand_ctrl/right_arm").c_str());
+        optionHR.put("remote","/"+robot+"/right_arm");
+        optionHR.put("local","/"+name+"/hand_ctrl/right_arm");
 
         if (!driverG.open(optionG))
             return false;
@@ -1087,10 +1087,10 @@ public:
         driverL.view(iCartCtrlL);
         driverR.view(iCartCtrlR);
 
-        visionPort.open(("/"+name+"/vision:i").c_str());
-        finderPort.open(("/"+name+"/finder:rpc").c_str());
-        rpcPort.open(("/"+name+"/rpc").c_str());
-        stopPort.open(("/"+name+"/stop:i").c_str());
+        visionPort.open("/"+name+"/vision:i");
+        finderPort.open("/"+name+"/finder:rpc");
+        rpcPort.open("/"+name+"/rpc");
+        stopPort.open("/"+name+"/stop:i");
         attach(rpcPort);
         stopPort.setReader(*this);
 

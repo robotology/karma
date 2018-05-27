@@ -38,17 +38,17 @@ using namespace yarp::math;
 /**********************************************************/
 bool Manager::configure(ResourceFinder &rf)
 {
-    name=rf.find("name").asString().c_str();
+    name=rf.find("name").asString();
 
     //incoming
-    motionFeatures.open(("/"+name+"/motionFilter:i").c_str());   //port for incoming blobs from motionCut
+    motionFeatures.open("/"+name+"/motionFilter:i");    //port for incoming blobs from motionCut
 
     //outgoing
-    toolPoint.open(("/"+name+"/target:o").c_str());             //port to send off target Points to segmentator
-    imgOutPort.open(("/"+name+"/img:o").c_str());             //port to send off target Points to segmentator
+    toolPoint.open("/"+name+"/target:o");               //port to send off target Points to segmentator
+    imgOutPort.open("/"+name+"/img:o");                 //port to send off target Points to segmentator
 
     //rpc
-    rpcHuman.open(("/"+name+"/human:rpc").c_str());             //rpc server to interact with the user
+    rpcHuman.open("/"+name+"/human:rpc");               //rpc server to interact with the user
 
     motionFeatures.setManager(this);
     lineDetails = new lineData [10];
@@ -77,7 +77,7 @@ bool Manager::close()
 /**********************************************************/
 int Manager::processHumanCmd(const Bottle &cmd, Bottle &b)
 {
-    int ret=Vocab::encode(cmd.get(0).asString().c_str());
+    int ret=Vocab::encode(cmd.get(0).asString());
     b.clear();
     if (cmd.size()>1)
     {

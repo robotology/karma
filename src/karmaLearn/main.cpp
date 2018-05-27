@@ -277,7 +277,7 @@ protected:
     {
         Bottle ret;
         for (map<string,IMachineLearner*>::const_iterator itr=machines.begin(); itr!=machines.end(); itr++)
-            ret.addString(itr->first.c_str());
+            ret.addString(itr->first);
 
         return ret;
     }
@@ -288,7 +288,7 @@ protected:
         map<string,IMachineLearner*>::iterator itr=machines.find(item);
         if (itr!=machines.end())
         {
-            content=itr->second->toString().c_str();
+            content=itr->second->toString();
             return true;
         }
         else
@@ -342,7 +342,7 @@ protected:
         {
             fout<<"[item_"<<i<<"]"<<endl;
             fout<<"name    "<<itr->first<<endl;
-            fout<<"learner "<<("("+string(itr->second->toString().c_str())+")").c_str()<<endl;
+            fout<<"learner "<<"("+itr->second->toString()+")"<<endl;
             fout<<endl;
         }
 
@@ -433,7 +433,7 @@ protected:
             {
                 if (payload.size()>=3)
                 {
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     double input=payload.get(1).asDouble();
                     double output=payload.get(2).asDouble();
 
@@ -451,7 +451,7 @@ protected:
                 if (payload.size()>=2)
                 {
                     Bottle output,variance;
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     if (payload.get(1).isDouble())
                     {
                         Bottle input; input.addDouble(payload.get(1).asDouble());
@@ -486,7 +486,7 @@ protected:
                 if (payload.size()>=1)
                 {                    
                     double step=DEFAULT_STEP;
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     if (payload.size()>=2)
                         step=payload.get(1).asDouble();
 
@@ -513,7 +513,7 @@ protected:
                     Bottle searchDomain;
                     double step=DEFAULT_STEP;
 
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     if (payload.size()>=2)
                     {
                         if (payload.get(1).isDouble())
@@ -548,12 +548,12 @@ protected:
             {
                 if (payload.size()>=1)
                 {
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     string content;
                     if (machineContent(item,content))
                     {
                         reply.addVocab(Vocab::encode("ack"));
-                        reply.addString(content.c_str());
+                        reply.addString(content);
                     }
                     else
                         reply.addVocab(Vocab::encode("nack"));
@@ -565,7 +565,7 @@ protected:
             {
                 if (payload.size()>=1)
                 {
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     if (clear(item))
                         reply.addVocab(Vocab::encode("ack"));
                     else
@@ -586,7 +586,7 @@ protected:
             {
                 if (payload.size()>=1)
                 {
-                    string item=payload.get(0).asString().c_str();
+                    string item=payload.get(0).asString();
                     if (payload.size()>=2)
                         plotStep=payload.get(1).asDouble();
 
@@ -627,7 +627,7 @@ public:
         Bottle &generalGroup=rf.findGroup("general");
         if (!generalGroup.isNull())
         {
-            name=generalGroup.check("name",Value("karmaLearn")).asString().c_str();
+            name=generalGroup.check("name",Value("karmaLearn")).asString();
             nItems=generalGroup.check("num_items",Value(0)).asInt();
             in_lb=generalGroup.check("in_lb",Value(0.0)).asDouble();
             in_ub=generalGroup.check("in_ub",Value(360.0)).asDouble();
@@ -649,7 +649,7 @@ public:
         for (int i=0; i<nItems; i++)
         {
             ostringstream item; item<<"item_"<<i;
-            Bottle &itemGroup=rf.findGroup(item.str().c_str());
+            Bottle &itemGroup=rf.findGroup(item.str());
             if (!itemGroup.isNull())
             {
                 if (!itemGroup.check("name"))
@@ -657,9 +657,9 @@ public:
 
                 IMachineLearner *learner=createLearner();
                 if (itemGroup.check("learner"))
-                    learner->fromString(itemGroup.find("learner").asList()->toString().c_str());
+                    learner->fromString(itemGroup.find("learner").asList()->toString());
 
-                machines[itemGroup.find("name").asString().c_str()]=learner;
+                machines[itemGroup.find("name").asString()]=learner;
             }
         }
 
@@ -669,8 +669,8 @@ public:
         plotItem="";
         plotStep=1.0;
 
-        plotPort.open(("/"+name+"/plot:o").c_str());
-        rpcPort.open(("/"+name+"/rpc").c_str());
+        plotPort.open("/"+name+"/plot:o");
+        rpcPort.open("/"+name+"/rpc");
         attach(rpcPort);
 
         return true;

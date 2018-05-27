@@ -39,33 +39,33 @@ using namespace yarp::math;
 /**********************************************************/
 bool Manager::configure(ResourceFinder &rf)
 {
-    name=rf.find("name").asString().c_str();
-    camera=rf.find("camera").asString().c_str();
+    name=rf.find("name").asString();
+    camera=rf.find("camera").asString();
     if ((camera!="left") && (camera!="right"))
         camera="left";
 
-    hand=rf.find("hand").asString().c_str();
+    hand=rf.find("hand").asString();
     if ((hand!="left") && (hand!="right"))
         hand="left";
 
     //incoming
-    particleFilter.open(("/"+name+"/particle:i").c_str());
-    pointedLoc.open(("/"+name+"/point:i").c_str());
-    blobExtractor.open(("/"+name+"/blobs:i").c_str());
+    particleFilter.open("/"+name+"/particle:i");
+    pointedLoc.open("/"+name+"/point:i");
+    blobExtractor.open("/"+name+"/blobs:i");
 
     //outgoing
-    segmentPoint.open(("/"+name+"/segmentTarget:o").c_str());       //port to send off target Points to segmentator
-    iolStateMachine.open(("/"+name+"/iolState:o").c_str());    
+    segmentPoint.open("/"+name+"/segmentTarget:o");         //port to send off target Points to segmentator
+    iolStateMachine.open("/"+name+"/iolState:o");    
 
     //rpc 
-    rpcMIL.open(("/"+name+"/mil:rpc").c_str());                     //rpc client to query mil classifications
-    rpcHuman.open(("/"+name+"/human:rpc").c_str());                 //rpc server to interact with the italkManager
-    rpcMotorAre.open(("/"+name+"/are:rpc").c_str());                //rpc server to query ARE
-    rpcMotorKarma.open(("/"+name+"/karma:rpc").c_str());            //rpc server to query Karma
-    rpcKarmaLearn.open(("/"+name+"/learn:rpc").c_str());
-    rpcReconstruct.open(("/"+name+"/reconstruct:rpc").c_str());
-    rpcGraspEstimate.open(("/"+name+"/graspestimate:rpc").c_str());
-    rpcOPC.open(("/"+name+"/opc:rpc").c_str());
+    rpcMIL.open("/"+name+"/mil:rpc");                       //rpc client to query mil classifications
+    rpcHuman.open("/"+name+"/human:rpc");                   //rpc server to interact with the italkManager
+    rpcMotorAre.open("/"+name+"/are:rpc");                  //rpc server to query ARE
+    rpcMotorKarma.open("/"+name+"/karma:rpc");              //rpc server to query Karma
+    rpcKarmaLearn.open("/"+name+"/learn:rpc");
+    rpcReconstruct.open("/"+name+"/reconstruct:rpc");
+    rpcGraspEstimate.open("/"+name+"/graspestimate:rpc");
+    rpcOPC.open("/"+name+"/opc:rpc");
 
     Rand::init();
 
@@ -137,7 +137,7 @@ bool Manager::close()
 /**********************************************************/
 int Manager::processHumanCmd(const Bottle &cmd, Bottle &b)
 {
-    int ret=Vocab::encode(cmd.get(0).asString().c_str());
+    int ret=Vocab::encode(cmd.get(0).asString());
     b.clear();
     if (cmd.size()>1)
     {
@@ -187,7 +187,7 @@ bool Manager::updateModule()
     int rxCmd=processHumanCmd(cmd,val);
     if (rxCmd==Vocab::encode("train"))
     {
-        obj=cmd.get(1).asString().c_str();
+        obj=cmd.get(1).asString();
         
         if (cmd.size() > 2)
         {
@@ -208,7 +208,7 @@ bool Manager::updateModule()
     }
     if (rxCmd==Vocab::encode("test"))
     {
-        obj=cmd.get(1).asString().c_str();
+        obj=cmd.get(1).asString();
         
         //pointGood = pointedLoc.getLoc(pointLocation);
         //Time::delay(1.5);
@@ -229,8 +229,8 @@ bool Manager::updateModule()
         if (cmd.size() > 2)
         {
             fprintf(stdout, "Will now use user selected arm and camera \n");
-            hand   = cmd.get(1).asString().c_str();
-            camera = cmd.get(2).asString().c_str();
+            hand   = cmd.get(1).asString();
+            camera = cmd.get(2).asString();
         }
         else
         {
@@ -260,7 +260,7 @@ bool Manager::updateModule()
     }
     if (rxCmd==Vocab::encode("grasp"))
     {
-        obj=cmd.get(1).asString().c_str();
+        obj=cmd.get(1).asString();
         if ( executePCLGrasp(obj) )
             reply.addString("ack");
         else 
@@ -282,7 +282,7 @@ bool Manager::updateModule()
     if (rxCmd==Vocab::encode("objRecog"))
     {
         blobList.clear();
-        obj=cmd.get(1).asString().c_str();
+        obj=cmd.get(1).asString();
         blobLoc = executeBlobRecog(obj);
 
         if (blobLoc.size()<1)
@@ -398,8 +398,8 @@ Bottle Manager::executeToolLearning()
     karmaMotor.clear();
     KarmaReply.clear();
     karmaMotor.addString("find");
-    karmaMotor.addString(hand.c_str());
-    karmaMotor.addString(camera.c_str());
+    karmaMotor.addString(hand);
+    karmaMotor.addString(camera);
     fprintf(stdout,"%s\n",karmaMotor.toString().c_str());
     rpcMotorKarma.write(karmaMotor, KarmaReply);
     fprintf(stdout,"action is %s:\n",KarmaReply.toString().c_str());
@@ -466,7 +466,7 @@ Bottle Manager::executeBlobRecog(const string &objName)
             
             fprintf(stdout, "The type is: %s and object name requested is: %s\n\n", classResults.get(x).asString().c_str(), objName.c_str() );
             
-            if (classResults.get(x).asString().c_str() == objName)
+            if (classResults.get(x).asString() == objName)
             {
 
                 pointLocation = getBlobCOG(blobs,index);
@@ -678,7 +678,7 @@ bool Manager::executePCLGrasp( const string &objName )
                 segCmd.clear();
                 segReply.clear();
                 segCmd.addString("3Drec");
-                segCmd.addString(objName.c_str());
+                segCmd.addString(objName);
                 
                 fprintf(stdout, "the cmd is: %s \n", segCmd.toString().c_str());
                 rpcReconstruct.write(segCmd, segReply);
@@ -862,11 +862,9 @@ int Manager::executeToolSearchOnLoc( const string &objName )
                 //type.clear();
                 //fprintf(stdout,"ask to get type\n");
                 //type=getType(&mil, x);
-                blobsDetails[x].name = classResults.get(x).asString().c_str();
-                
+                blobsDetails[x].name = classResults.get(x).asString();
                 
                 fprintf(stdout, "SO: name is: %s x is %d u is %d index is %d\n",blobsDetails[x].name.c_str(),blobsDetails[x].posistion.x, blobsDetails[x].posistion.y, blobsDetails[x].index);
-
 
                 //should look at x y
                 /*Bottle cmdAre, replyAre;
@@ -1002,7 +1000,7 @@ int Manager::executeToolSearchOnLoc( const string &objName )
         }
 
         //HERE DO MAXIMUM DISTANCE CHECK... -0.40 -0.33
-        string tmpObjName = blobsDetails[bestIndex].name.c_str();
+        string tmpObjName = blobsDetails[bestIndex].name;
         executeSpeech ("can you give me the " + tmpObjName + "please?");
         
         //objectPos[0] has the oject position -0.43 is the maximum distance
@@ -1145,7 +1143,7 @@ Bottle Manager::executeKarmaOptimize(const Vector &tool, const string &name)
     cmdLearn.clear();
     cmdReply.clear();
     cmdLearn.addString("optimize");
-    cmdLearn.addString(name.c_str());
+    cmdLearn.addString(name);
     fprintf(stdout, "the cmd is: %s \n",cmdLearn.toString().c_str());
     rpcKarmaLearn.write(cmdLearn, cmdReply);
     fprintf(stdout, "the reply is: %s \n",cmdReply.toString().c_str()); 
@@ -1241,7 +1239,7 @@ bool Manager::executeSpeech (const string &speech)
     Bottle replyIol;
     cmdIol.clear(), replyIol.clear();
     cmdIol.addString("say");
-    cmdIol.addString(speech.c_str());
+    cmdIol.addString(speech);
     iolStateMachine.write(cmdIol,replyIol);
     fprintf(stdout,"%s\n", replyIol.toString().c_str());
     return true;
@@ -1313,7 +1311,7 @@ int Manager::executeOnLoc(bool shouldTrain)
             cmdLearn.clear();
             cmdReply.clear();
             cmdLearn.addString("optimize");
-            cmdLearn.addString(obj.c_str());
+            cmdLearn.addString(obj);
             /*Bottle &angles = cmdLearn.addList();
             for (int i = 0; i< randActions.size(); i++)
             {
@@ -1396,7 +1394,7 @@ int Manager::executeOnLoc(bool shouldTrain)
                         cmdLearn.clear();
                         replyLearn.clear();
                         cmdLearn.addString("train");
-                        cmdLearn.addString(obj.c_str());//type.toString().c_str());
+                        cmdLearn.addString(obj);
                         
                         double wrappedAng = 0.0;
                         wrappedAng = wrapAng ( finalOrient );
@@ -1521,7 +1519,7 @@ Bottle Manager::classify(const Bottle &blobs, int index)
     ostringstream tag;
     tag<<"blob_"<<index;
     Bottle &item=options.addList();
-    item.addString(tag.str().c_str());
+    item.addString(tag.str());
     item.addList()=*blobs.get(index).asList();
 
     printf("Sending classification request: %s\n",cmd.toString().c_str());
@@ -1563,7 +1561,7 @@ Bottle Manager::getType(const yarp::os::Bottle *scores, int index)
                 if(tmp_scores->get(s).asList()->get(1).asDouble()>max_score)
                 {
                     max_score=tmp_scores->get(s).asList()->get(1).asDouble();
-                    max_label=tmp_scores->get(s).asList()->get(0).asString().c_str();
+                    max_label=tmp_scores->get(s).asList()->get(0).asString();
                 }
             }
         }
@@ -1574,7 +1572,7 @@ Bottle Manager::getType(const yarp::os::Bottle *scores, int index)
         tag<<max_label;
         Bottle type;
         type.clear();
-        type.addString(max_label.c_str());
+        type.addString(max_label);
         return type;
     }
     Bottle type;
@@ -1595,7 +1593,7 @@ bool Manager::get3DPosition(const CvPoint &point, Vector &x)
     cmdMotor.addVocab(Vocab::encode("get"));
     cmdMotor.addVocab(Vocab::encode("s2c"));
     Bottle &options=cmdMotor.addList();
-    options.addString(camera.c_str());
+    options.addString(camera);
     options.addInt(point.x);
     options.addInt(point.y);
     printf("Sending motor query: %s\n",cmdMotor.toString().c_str());

@@ -528,10 +528,10 @@ public:
     /************************************************************************/
     bool configure(ResourceFinder &rf)
     {
-        string robot=rf.check("robot",Value("icub")).asString().c_str();
-        string name=rf.check("name",Value("karmaToolFinder")).asString().c_str();
-        arm=rf.check("arm",Value("right")).asString().c_str();
-        eye=rf.check("eye",Value("left")).asString().c_str();
+        string robot=rf.check("robot",Value("icub")).asString();
+        string name=rf.check("name",Value("karmaToolFinder")).asString();
+        arm=rf.check("arm",Value("right")).asString();
+        eye=rf.check("eye",Value("left")).asString();
 
         if ((arm!="left") && (arm!="right"))
         {
@@ -546,8 +546,8 @@ public:
         }
 
         Property optionArmL("(device cartesiancontrollerclient)");
-        optionArmL.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
-        optionArmL.put("local",("/"+name+"/left_arm").c_str());
+        optionArmL.put("remote","/"+robot+"/cartesianController/left_arm");
+        optionArmL.put("local","/"+name+"/left_arm");
         if (!drvArmL.open(optionArmL))
         {
             printf("Cartesian left_arm controller not available!\n");
@@ -556,8 +556,8 @@ public:
         }
 
         Property optionArmR("(device cartesiancontrollerclient)");
-        optionArmR.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
-        optionArmR.put("local",("/"+name+"/right_arm").c_str());
+        optionArmR.put("remote","/"+robot+"/cartesianController/right_arm");
+        optionArmR.put("local","/"+name+"/right_arm");
         if (!drvArmR.open(optionArmR))
         {
             printf("Cartesian right_arm controller not available!\n");
@@ -572,7 +572,7 @@ public:
 
         Property optionGaze("(device gazecontrollerclient)");
         optionGaze.put("remote","/iKinGazeCtrl");
-        optionGaze.put("local",("/"+name+"/gaze").c_str());
+        optionGaze.put("local","/"+name+"/gaze");
         if (drvGaze.open(optionGaze))
             drvGaze.view(igaze);
         else
@@ -584,7 +584,7 @@ public:
 
         Bottle info;
         igaze->getInfo(info);
-        if (Bottle *pB=info.find(("camera_intrinsics_"+eye).c_str()).asList())
+        if (Bottle *pB=info.find("camera_intrinsics_"+eye).asList())
         {
             int cnt=0;
             Prj.resize(3,4);
@@ -599,11 +599,11 @@ public:
             return false;
         }
 
-        imgInPort.open(("/"+name+"/img:i").c_str());
-        imgOutPort.open(("/"+name+"/img:o").c_str());
-        dataInPort.open(("/"+name+"/in").c_str());
-        logPort.open(("/"+name+"/log:o").c_str());
-        rpcPort.open(("/"+name+"/rpc").c_str());
+        imgInPort.open("/"+name+"/img:i");
+        imgOutPort.open("/"+name+"/img:o");
+        dataInPort.open("/"+name+"/in");
+        logPort.open("/"+name+"/log:o");
+        rpcPort.open("/"+name+"/rpc");
         attach(rpcPort);
 
         Vector min(3),max(3);
@@ -646,8 +646,8 @@ public:
                 {
                     if (command.size()>=3)
                     {
-                        string arm=command.get(1).asString().c_str();
-                        string eye=command.get(2).asString().c_str();
+                        string arm=command.get(1).asString();
+                        string eye=command.get(2).asString();
 
                         if ((arm=="left") || (arm=="right"))
                             this->arm=arm;
