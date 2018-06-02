@@ -24,7 +24,7 @@
 
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
-#include <yarp/os/RateThread.h>
+#include <yarp/os/PeriodicThread.h>
 #include <yarp/os/PortReport.h>
 
 class Manager;  //forward declaration
