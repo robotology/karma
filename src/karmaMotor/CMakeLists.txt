@@ -3,8 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 cmake_minimum_required(VERSION 3.5)
-set(PROJECTNAME karmaMotor)
-project(${PROJECTNAME})
+project(karmaMotor)
 
 find_package(YARP)
 find_package(ICUB)
@@ -20,8 +19,7 @@ icubcontrib_set_default_prefix()
 set(folder_source main.cpp)
 source_group("Source Files" FILES ${folder_source})
 
-include_directories(${ICUB_INCLUDE_DIRS})
-add_executable(${PROJECTNAME} ${folder_source})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib)
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+add_executable(${PROJECT_NAME} ${folder_source})
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ctrlLib)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 

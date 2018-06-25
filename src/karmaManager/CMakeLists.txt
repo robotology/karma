@@ -3,8 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 cmake_minimum_required(VERSION 3.5)
-set(PROJECTNAME karmaManager)
-project(${PROJECTNAME})
+project(karmaManager)
    
 find_package(YARP)
 find_package(ICUB)
@@ -21,7 +20,6 @@ include(ICUBcontribOptions)
 icubcontrib_set_default_prefix()
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${ctrlLib_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS} 
                     )
 
@@ -35,7 +33,7 @@ source_group("Header Files" FILES ${folder_header})
 
 # add executables and link libraries.
 add_definitions(-D_USE_MATH_DEFINES)
-add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
-target_link_libraries(${PROJECTNAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
