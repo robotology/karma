@@ -7,7 +7,6 @@ project(karmaLearn)
 
 find_package(YARP REQUIRED COMPONENTS OS sig dev math gsl)
 find_package(ICUB)
-list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
 
 find_package(OpenCV)
