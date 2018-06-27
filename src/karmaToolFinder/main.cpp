@@ -630,7 +630,7 @@ public:
             switch (command.get(0).asVocab())
             {
                 //-----------------
-                case VOCAB4('c','l','e','a'):
+                case createVocab('c','l','e','a'):
                 {
                     mutex.wait();
                     solver.clearItems();
@@ -642,7 +642,7 @@ public:
                 }
                 
                 //-----------------
-                case VOCAB4('s','e','l','e'):
+                case createVocab('s','e','l','e'):
                 {
                     if (command.size()>=3)
                     {
@@ -669,7 +669,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB3('n','u','m'):
+                case createVocab('n','u','m'):
                 {
                     reply.addVocab(ack);
 
@@ -681,7 +681,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('f','i','n','d'):
+                case createVocab('f','i','n','d'):
                 {
                     double error;
 
@@ -702,7 +702,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('s','h','o','w'):
+                case createVocab('s','h','o','w'):
                 {
                     if (command.size()>=4)
                     {
@@ -719,7 +719,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB3('t','i','p'):
+                case createVocab('t','i','p'):
                 {
                     if (tip.size()>=2)
                     {
@@ -733,7 +733,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('e','n','a','b'):
+                case createVocab('e','n','a','b'):
                 {
                     enabled=true;
                     reply.addVocab(ack);
@@ -741,7 +741,7 @@ public:
                 }
 
                 //-----------------
-                case VOCAB4('d','i','s','a'):
+                case createVocab('d','i','s','a'):
                 {
                     enabled=false;
                     reply.addVocab(ack);

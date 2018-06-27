@@ -32,9 +32,9 @@ using namespace yarp::math;
 
 #define RET_INVALID     -1
 
-#define CMD_TRAIN               VOCAB4('t','r','a','i')
-#define CMD_EXECUTE             VOCAB4('e','x','e','c')
-#define CMD_TOOLEXTEND          VOCAB4('e','x','t','d')
+#define CMD_TRAIN               yarp::os::createVocab('t','r','a','i')
+#define CMD_EXECUTE             yarp::os::createVocab('e','x','e','c')
+#define CMD_TOOLEXTEND          yarp::os::createVocab('e','x','t','d')
 
 /**********************************************************/
 bool Manager::configure(ResourceFinder &rf)

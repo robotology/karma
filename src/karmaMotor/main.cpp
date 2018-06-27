@@ -183,7 +183,7 @@ protected:
         switch (cmd)
         {
             //-----------------
-            case VOCAB4('p','u','s','h'):
+            case createVocab('p','u','s','h'):
             {
                 Bottle payload=command.tail();
                 if (payload.size()>=5)
@@ -206,8 +206,8 @@ protected:
             }
 
             //-----------------
-            case VOCAB4('d','r','a','w'):
-            case VOCAB4('v','d','r','a'):
+            case createVocab('d','r','a','w'):
+            case createVocab('v','d','r','a'):
             {
                 Bottle payload=command.tail();
                 if (payload.size()>=6)
@@ -224,11 +224,11 @@ protected:
                     radius=payload.get(4).asDouble();
                     dist=payload.get(5).asDouble();
 
-                    double res=draw(cmd==VOCAB4('v','d','r','a'),c,theta,
+                    double res=draw(cmd==createVocab('v','d','r','a'),c,theta,
                                     radius,dist,pushHand,toolFrame);
 
                     reply.addVocab(ack);
-                    if (cmd==VOCAB4('v','d','r','a'))
+                    if (cmd==createVocab('v','d','r','a'))
                         reply.addDouble(res);
                 }
 
@@ -236,7 +236,7 @@ protected:
             }
 
             //-----------------
-            case VOCAB4('f','i','n','d'):
+            case createVocab('f','i','n','d'):
             {
                 Bottle payload=command.tail();
                 if (payload.size()>=2)
@@ -258,7 +258,7 @@ protected:
             }
 
             //-----------------
-            case VOCAB4('t','o','o','l'):
+            case createVocab('t','o','o','l'):
             {
                 if (command.size()>1)
                 {
