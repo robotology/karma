@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(karmaLearn)
 
-find_package(YARP REQUIRED COMPONENTS OS sig dev math gsl)
+find_package(YARP REQUIRED COMPONENTS OS sig dev math gsl idl_tools)
 find_package(ICUB)
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
 
