@@ -18,9 +18,7 @@ include(ICUBcontribHelpers)
 include(ICUBcontribOptions)
 icubcontrib_set_default_prefix()
 
-include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${OpenCV_INCLUDE_DIRS} 
-                    )
+include_directories(${PROJECT_SOURCE_DIR}/include)
 
 set(folder_source main.cpp)
 # Search for source code.

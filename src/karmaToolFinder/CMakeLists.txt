@@ -21,7 +21,7 @@ icubcontrib_set_default_prefix()
 set(folder_source main.cpp)
 source_group("Source Files" FILES ${folder_source})
 
-include_directories(${IPOPT_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+include_directories(${IPOPT_INCLUDE_DIRS})
 add_definitions(${IPOPT_DEFINITIONS})
 add_executable(${PROJECT_NAME} ${folder_source})
 set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")

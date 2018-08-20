@@ -20,7 +20,6 @@ icubcontrib_set_default_prefix()
 set(folder_source main.cpp)
 source_group("Source Files" FILES ${folder_source})
 
-include_directories(${OpenCV_INCLUDE_DIRS})
 add_executable(${PROJECT_NAME} ${folder_source})
 target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} learningMachine)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
