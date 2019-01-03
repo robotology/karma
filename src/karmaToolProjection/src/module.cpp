@@ -19,20 +19,15 @@
 
 #include <yarp/math/Rand.h>
 #include <yarp/math/Math.h>
+#include <yarp/cv/Cv.h>
 #include "iCub/module.h"
-
-#if (CV_MAJOR_VERSION<=2)
-    #define KMEANS_WITH_POINTER
-    #if (CV_MAJOR_VERSION==2) && (CV_MINOR_VERSION>2)
-        #undef KMEANS_WITH_POINTER
-    #endif
-#endif
 
 using namespace cv;
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace yarp::cv;
 
 
 /**********************************************************/
@@ -113,15 +108,12 @@ double Manager::getPeriod()
 /**********************************************************/
 void Manager::processMotionPoints(Bottle &b)
 {
-   // fprintf(stdout,"create mat\n");
-
     //create MAT image
     cv::Mat imgMat(Size(320,240),CV_8UC3);
     cv::Mat imgClean(Size(320,240),CV_8UC3);
-    //vector<Point> points;
     imgMat = Scalar::all(0);
     imgClean = Scalar::all(255);
-   // fprintf(stdout,"filling up the data\n");
+
     for (int x=1; x<b.size(); x++)
     {
         Point pt;
@@ -134,7 +126,7 @@ void Manager::processMotionPoints(Bottle &b)
         imgClean.at<cv::Vec3b>(pt.y,pt.x)[1] = 0 ;
         imgClean.at<cv::Vec3b>(pt.y,pt.x)[2] = 0 ;
     }
-    //imgClean = imgMat;
+
     int n = 10;
     int an = n > 0 ? n : -n;
     int element_shape = MORPH_RECT;
@@ -142,23 +134,16 @@ void Manager::processMotionPoints(Bottle &b)
     morphologyEx(imgMat, imgMat, CV_MOP_CLOSE, element);
 
     Bottle data;
-    //fprintf(stdout,"before process image\n");
-    data = processImage(b, imgMat, imgClean, lineDetails); //image analisis and bottle cleaning
-    //fprintf(stdout,"before process blobs\n");
+    data = processImage(b, imgMat, imgClean, lineDetails); //image analysis and bottle cleaning
     
     if (data.size() > 0)
         processBlobs(data, imgClean, lineDetails); // kmeans
 
-    ImageOf<PixelRgb> outImg;// = new ImageOf<PixelRgb>;
-    //fprintf(stdout,"done1 with data %d %d\n", imgClean.cols, imgClean.rows);
+    ImageOf<PixelRgb> &outImg = imgOutPort.prepare();
     outImg.resize( imgClean.cols, imgClean.rows );
-    IplImage ipl_img = imgClean;
-    cvCopy(&ipl_img, (IplImage*)outImg.getIplImage());
-    imgOutPort.prepare() = outImg;
+    imgClean.copyTo(toCvMat(outImg));
     imgOutPort.write();
-    //delete[] outImg;
-    //fprintf(stdout,"ok\n");
-    }
+}
 
 /**********************************************************/
 void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
@@ -181,11 +166,8 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
         return;
     }
     
-#ifdef KMEANS_WITH_POINTER
-    kmeans(points, clusterCount, labels, TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0), 3, KMEANS_PP_CENTERS, &centers);
-#else
     kmeans(points, clusterCount, labels, TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0), 3, KMEANS_PP_CENTERS, centers);
-#endif
+
     Point pts[10];
     for (int i = 0; i < clusterCount; i++)
     {
@@ -199,8 +181,7 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
     }
     double gradient = 0;
     double intercept = 0;
-    //fprintf(stdout,"dbg4      cluster cnt %d,   %d %d      %d %d\n", clusterCount, pts[0].x,  pts[0].y, pts[1].x,  pts[1].y);
-    //check that pt0 is the lowest point
+
     if (pts[1].y < pts[0].y )
     {
         double pow1 = pow( fabs((double)pts[0].x - (double)pts[1].x),2);
@@ -210,7 +191,6 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
         endPoint.x = (int)(pts[1].x + (double)(pts[1].x - pts[0].x) / lenAB * 50);
         endPoint.y = (int)(pts[1].y + (double) (pts[1].y - pts[0].y) / lenAB * 50);
         line(dest, pts[0], endPoint, Scalar(0,0,0), 2, CV_AA);
-        //fprintf(stdout,"dbg4.444 %d    %d \n", endPoint.x, endPoint.y);
         gradient  = (double)( endPoint.y - pts[0].y ) / (double)( endPoint.x - pts[0].x );
         intercept = (double)( pts[0].y - (double)(pts[0].x * gradient) );
         lineDetails[1].gradient = gradient;
@@ -225,7 +205,6 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
         endPoint.x = (int)(pts[0].x + (double)(pts[0].x - pts[1].x) / lenAB * 50);
         endPoint.y = (int)(pts[0].y + (double)(pts[0].y - pts[1].y) / lenAB * 50);
         line(dest, pts[1], endPoint, Scalar(0,0,0), 2, CV_AA);
-       //fprintf(stdout,"dbg4.888 %d    %d \n", endPoint.x, endPoint.y);
         
         gradient  = (double)( endPoint.y - pts[1].y) / (double)(endPoint.x - pts[1].x);
         intercept = (double)( endPoint.y - (double)(endPoint.x * gradient) );
@@ -242,13 +221,9 @@ void Manager::getIntersection(cv::Mat &dest, lineData *lineDetails)
     int lineType  = 8;
     Point intersect;
 
-    //fprintf(stdout,"line gradient = %lf and line gradient = %lf\n",lineDetails[0].gradient, lineDetails[1].gradient);
-    //fprintf(stdout,"line intercept = %lf and line intercept = %lf\n",lineDetails[0].intercept, lineDetails[1].intercept);
-
     intersect.x =  (int)( (lineDetails[1].intercept - lineDetails[0].intercept) / (lineDetails[0].gradient-lineDetails[1].gradient));
     intersect.y =  (int)( (lineDetails[0].gradient * intersect.x) + lineDetails[0].intercept);
 
-    //fprintf(stdout,"the point is %d %d     %d %d\n",intersect.x, intersect.y, dest.cols, dest.rows);
     if (intersect.x > 0 && intersect.y >0 && intersect.x < dest.cols && intersect.y < dest.rows)
     {
         circle( dest, intersect, dest.rows/(int)32.0, Scalar( 255, 0, 0 ), thickness, lineType );
@@ -284,16 +259,12 @@ Bottle Manager::processImage(Bottle &b, cv::Mat &dest, cv::Mat &clean, lineData 
         if( MAX(box.size.width, box.size.height) > MIN(box.size.width, box.size.height)*30 )
             continue;
 
-        //ellipse(dest, box, Scalar(0,0,255), 1, CV_AA);
-        //ellipse(dest, box.center, box.size*0.5f, box.angle, 0, 360, Scalar(0,255,255), 1, CV_AA);
-
         double area =  contourArea( Mat(contours[i]) );
         if ( area > 10 && area < 4000)
         {
             for (int x = (int)box.center.x - (int)box.size.width; x < (int)box.center.x + (int)box.size.width; x++){
                 for (int y = (int)box.center.y - (int)box.size.height; y < (int)box.center.y + (int)box.size.height; y++)
                 {
-                    //fprintf(stdout,"x: %d y: %d    %d    %d\n",x,y,imgGray.rows-1, imgGray.cols-1);
                     if (y< imgGray.rows-1 &&  x< imgGray.cols-1 && y > 0 && x > 0)
                     {
                         if( dest.at<cv::Vec3b>(y,x)[0] == 255 )
@@ -340,17 +311,9 @@ Bottle Manager::processImage(Bottle &b, cv::Mat &dest, cv::Mat &clean, lineData 
                 j = 3;
                 fprintf(stdout,"0 < 3 %lf  smaller than %lf  \n", vtx[1].y, vtx[3].y);
             }
-            //line(clean, vtx[1], vtx[(1+1)%4], Scalar(255,0,0), 2, CV_AA);
+
             line(clean, vtx[j], vtx[(j+1)%4], Scalar(0,0,0), 2, CV_AA);
-
-            /*for( int j = 3; j < 4; j++ )//only draw last line
-            {
-                line(clean, vtx[j], vtx[(j+1)%4], Scalar(0,0,0), 2, CV_AA);
-                //circle( dest, intersect, dest.rows/(int)32.0, Scalar( 255, 0, 0 ), thickness, lineType );
-            }*/
-
             gradient = ( vtx[(j+1)%4].y - vtx[j].y) / (vtx[(j+1)%4].x - vtx[j].x);
-            //using the first point
             intercept = ( vtx[j].y - (vtx[j].x *gradient) );
 
             lineDetails[0].gradient = gradient;

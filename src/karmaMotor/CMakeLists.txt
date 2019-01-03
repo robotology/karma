@@ -5,12 +5,12 @@
 cmake_minimum_required(VERSION 3.5)
 project(karmaMotor)
 
-find_package(YARP)
-find_package(ICUB)
+find_package(ICUBcontrib REQUIRED)
+find_package(YARP REQUIRED)
+find_package(ICUB REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
-
-find_package(ICUBcontrib)
 list(APPEND CMAKE_MODULE_PATH ${ICUBCONTRIB_MODULE_PATH})
+
 include(ICUBcontribHelpers)
 include(ICUBcontribOptions)
 icubcontrib_set_default_prefix()

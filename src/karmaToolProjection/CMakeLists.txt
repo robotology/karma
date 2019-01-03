@@ -5,15 +5,14 @@
 cmake_minimum_required(VERSION 3.5)
 project(karmaToolProjection)
    
-find_package(YARP)
-find_package(ICUB)
+find_package(ICUBcontrib REQUIRED)
+find_package(YARP 3.1.100 COMPONENTS OS sig math cv)
+find_package(ICUB REQUIRED)
+find_package(OpenCV REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
-
-find_package(OpenCV)
-
-find_package(ICUBcontrib)
 list(APPEND CMAKE_MODULE_PATH ${ICUBCONTRIB_MODULE_PATH})
+
 include(ICUBcontribHelpers)
 include(ICUBcontribOptions)
 icubcontrib_set_default_prefix()

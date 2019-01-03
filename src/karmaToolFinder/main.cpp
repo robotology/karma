@@ -107,6 +107,7 @@ Windows, Linux
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
 #include <yarp/math/Math.h>
+#include <yarp/cv/Cv.h>
 
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -118,6 +119,7 @@ using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::sig;
 using namespace yarp::math;
+using namespace yarp::cv;
 
 
 /****************************************************************/
@@ -800,19 +802,21 @@ public:
                 igaze->get2DPixel(camSel,z,pz);
                 igaze->get2DPixel(camSel,t,pt);
 
-                CvPoint point_c=cvPoint((int)pc[0],(int)pc[1]);
-                CvPoint point_x=cvPoint((int)px[0],(int)px[1]);
-                CvPoint point_y=cvPoint((int)py[0],(int)py[1]);
-                CvPoint point_z=cvPoint((int)pz[0],(int)pz[1]);
-                CvPoint point_t=cvPoint((int)pt[0],(int)pt[1]);
+                cv::Point point_c((int)pc[0],(int)pc[1]);
+                cv::Point point_x((int)px[0],(int)px[1]);
+                cv::Point point_y((int)py[0],(int)py[1]);
+                cv::Point point_z((int)pz[0],(int)pz[1]);
+                cv::Point point_t((int)pt[0],(int)pt[1]);
 
-                cvCircle(pImgBgrIn->getIplImage(),point_c,4,cvScalar(0,255,0),4);
-                cvCircle(pImgBgrIn->getIplImage(),point_t,4,cvScalar(255,0,0),4);
+                cv::Mat imgMat=toCvMat(*pImgBgrIn);
 
-                cvLine(pImgBgrIn->getIplImage(),point_c,point_x,cvScalar(0,0,255),2);
-                cvLine(pImgBgrIn->getIplImage(),point_c,point_y,cvScalar(0,255,0),2);
-                cvLine(pImgBgrIn->getIplImage(),point_c,point_z,cvScalar(255,0,0),2);
-                cvLine(pImgBgrIn->getIplImage(),point_c,point_t,cvScalar(255,255,255),2);
+                cv::circle(imgMat,point_c,4,cv::Scalar(0,255,0),4);
+                cv::circle(imgMat,point_t,4,cv::Scalar(255,0,0),4);
+
+                cv::line(imgMat,point_c,point_x,cv::Scalar(0,0,255),2);
+                cv::line(imgMat,point_c,point_y,cv::Scalar(0,255,0),2);
+                cv::line(imgMat,point_c,point_z,cv::Scalar(255,0,0),2);
+                cv::line(imgMat,point_c,point_t,cv::Scalar(255,255,255),2);
 
                 tip.clear();
                 tip.addInt(point_t.x);

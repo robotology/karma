@@ -36,16 +36,15 @@
 
 /**********************************************************/
 struct lineData
-    {
-        double gradient;
-        double intercept;
-    };
+{
+    double gradient;
+    double intercept;
+};
 
 /**********************************************************/
 class Manager : public yarp::os::RFModule
 {
-    protected:
-
+protected:
     std::string                 name;                                                   //name of the module
     yarp::os::Port              rpcHuman;                                               //human rpc port (receive commands via rpc)
 
@@ -53,7 +52,7 @@ class Manager : public yarp::os::RFModule
     yarp::os::Port              toolPoint;                                              //port that receives an image containing blobs from motion
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imgOutPort;        //port that sends out img
 
-    MotionFeatures              motionFeatures;         //class to receive points from motionFilter
+    MotionFeatures              motionFeatures;                                         //class to receive points from motionFilter
 
     lineData                    *lineDetails;
 
@@ -65,17 +64,12 @@ class Manager : public yarp::os::RFModule
 
     friend class                MotionFeatures;
 
-    
-
-    public:
-
+public:
     bool    configure(yarp::os::ResourceFinder &rf);
     bool    interruptModule();
     bool    close();
     bool    updateModule();
     double  getPeriod();
-
-    
-
 };
+
 #endif

@@ -114,6 +114,7 @@ Windows, Linux
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
+#include <yarp/cv/Cv.h>
 
 #include <iCub/learningMachine/FixedRangeScaler.h>
 #include <iCub/learningMachine/IMachineLearner.h>
@@ -124,6 +125,7 @@ Windows, Linux
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
+using namespace yarp::cv;
 using namespace iCub::learningmachine;
 
 
@@ -362,12 +364,10 @@ protected:
             {
                 ImageOf<PixelMono> &img=plotPort.prepare();
                 img.resize(320,240);
-                for (int x=0; x<img.width(); x++)
-                    for (int y=0; y<img.height(); y++)
-                        img(x,y)=255;
+                cv::Mat imgMat=toCvMat(img);
+                imgMat.setTo(cv::Scalar(255));
 
-                CvFont font; cvInitFont(&font,CV_FONT_HERSHEY_SIMPLEX,0.5,0.5,0,1);
-                cvPutText(img.getIplImage(),plotItem.c_str(),cvPoint(250,20),&font,cvScalar(0));
+                cv::putText(imgMat,plotItem,cv::Point(250,20),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
 
                 double x_min=scalerIn.getLowerBoundIn();
                 double x_max=scalerIn.getUpperBoundIn();
@@ -382,36 +382,36 @@ protected:
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<x_min;
-                    cvPutText(img.getIplImage(),tag.str().c_str(),cvPoint(10,230),&font,cvScalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(10,230),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<x_max;
-                    cvPutText(img.getIplImage(),tag.str().c_str(),cvPoint(280,230),&font,cvScalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(280,230),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<y_min;
-                    cvPutText(img.getIplImage(),tag.str().c_str(),cvPoint(10,215),&font,cvScalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(10,215),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<y_max;
-                    cvPutText(img.getIplImage(),tag.str().c_str(),cvPoint(10,20),&font,cvScalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(10,20),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
-                CvPoint pold;
+                cv::Point pold;
                 for (int i=0; i<input.size(); i++)
                 {
-                    CvPoint p;
+                    cv::Point p;
                     p.x=int((img.width()/x_range)*(input.get(i).asDouble()-x_min));
                     p.y=img.height()-int((img.height()/y_range)*(output.get(i).asDouble()-y_min));
                     
                     if (i>0)
-                        cvLine(img.getIplImage(),p,pold,cvScalar(0),2);
+                        cv::line(imgMat,p,pold,cv::Scalar(0),2);
 
                     pold=p;
                 }
