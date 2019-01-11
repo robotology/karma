@@ -27,9 +27,8 @@ file( GLOB folder_header include/iCub/*.h )
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
 
-# add executables and link libraries.
-add_definitions(-D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
