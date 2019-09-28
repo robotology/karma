@@ -22,7 +22,6 @@
 #include <map>
 
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcServer.h>
 #include <yarp/os/RpcClient.h>
@@ -74,7 +73,7 @@ protected:
     yarp::os::BufferedPort<yarp::os::Bottle>        blobExtractor;
     yarp::os::BufferedPort<yarp::os::Bottle>        particleTracks;
 
-    yarp::os::Semaphore         mutexResources;     //mutex for ressources
+    std::mutex                  mutexResources;     //mutex for ressources
     bool                        pointGood;          //boolean for if got a point location
     CvPoint                     pointLocation;      //x and y of the pointed location
     bool                        init;

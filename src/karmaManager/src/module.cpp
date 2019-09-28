@@ -441,9 +441,9 @@ Bottle Manager::executeBlobRecog(const string &objName)
             pointLocation = getBlobCOG(blobs,x);
             fprintf (stdout,"point is %d %d \n", pointLocation.x, pointLocation.y);
             Bottle closestBlob;
-            mutexResources.wait();
+            mutexResources.lock();
             closestBlob=findClosestBlob(blobs,pointLocation);
-            mutexResources.post();
+            mutexResources.unlock();
 
             CvPoint cog;
             cog.x = closestBlob.get(0).asInt();
@@ -507,9 +507,9 @@ int Manager::executeToolOnLoc()
     if (pointGood)
     {
         Bottle closestBlob;
-        mutexResources.wait();
+        mutexResources.lock();
         closestBlob=findClosestBlob(blobs,pointLocation);
-        mutexResources.post();
+        mutexResources.unlock();
 
         CvPoint cog;
         cog.x = closestBlob.get(0).asInt();
@@ -562,9 +562,9 @@ Bottle Manager::findBlobLoc()
     if (pointGood)
     {
         Bottle closestBlob;
-        mutexResources.wait();
+        mutexResources.lock();
         closestBlob=findClosestBlob(blobs,pointLocation);
-        mutexResources.post();
+        mutexResources.unlock();
 
         CvPoint cog;
         cog.x = closestBlob.get(0).asInt();
@@ -827,9 +827,9 @@ int Manager::executeToolSearchOnLoc( const string &objName )
             fprintf (stdout,"object is %d %d \n", objLoc.x, objLoc.y);
             
             Bottle closestBlob;
-            mutexResources.wait();
+            mutexResources.lock();
             closestBlob=findClosestBlob(blobs,pointLocation);
-            mutexResources.post();
+            mutexResources.unlock();
             
             fprintf(stdout, "checkin if objDiff x %d objDiff y %d \n",abs( objLoc.x - pointLocation.x), abs( objLoc.y - pointLocation.y));
 
@@ -1272,9 +1272,9 @@ int Manager::executeOnLoc(bool shouldTrain)
     if (pointGood)
     {
         Bottle closestBlob;
-        mutexResources.wait();
+        mutexResources.lock();
         closestBlob=findClosestBlob(blobs,pointLocation);
-        mutexResources.post();
+        mutexResources.unlock();
         
         CvPoint cog;
         cog.x = closestBlob.get(0).asInt();
@@ -1505,7 +1505,7 @@ Bottle Manager::getOffset( Bottle &closestBlob, double actionOrient, Vector &ini
 Bottle Manager::classify(const Bottle &blobs, int index)
 {
     //grab resources
-    mutexResources.wait();
+    mutexResources.lock();
     Bottle mils;
     mils.clear();
 
@@ -1525,7 +1525,7 @@ Bottle Manager::classify(const Bottle &blobs, int index)
     printf("Sending classification request: %s\n",cmd.toString().c_str());
     rpcMIL.write(cmd,reply);
     printf("Received reply: %s\n",reply.toString().c_str());
-    mutexResources.post();
+    mutexResources.unlock();
     //Bottle &toReturn = gotMils.addList();
     
     CvPoint cog;
@@ -1615,7 +1615,7 @@ bool Manager::get3DPosition(const CvPoint &point, Vector &x)
 Bottle Manager::getBlobs()
 {
     // grab resources
-    mutexResources.wait();
+    mutexResources.lock();
 
     if (Bottle *pBlobs=blobExtractor.read(false))
     {
@@ -1629,7 +1629,7 @@ Bottle Manager::getBlobs()
         }
     }  
     // release resources
-    mutexResources.post();
+    mutexResources.unlock();
 
     return lastBlobs;
 }

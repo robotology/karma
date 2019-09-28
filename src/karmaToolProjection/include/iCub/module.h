@@ -23,7 +23,6 @@
 #include "opencv2/opencv.hpp"
 
 #include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RpcServer.h>
 #include <yarp/os/RpcClient.h>

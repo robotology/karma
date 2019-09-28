@@ -103,7 +103,8 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <stdio.h>
+#include <cstdio>
+#include <mutex>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -143,7 +144,7 @@ protected:
     string plotItem;
     double plotStep;
 
-    Semaphore mutex;
+    mutex mtx;
     RpcServer rpcPort;
     BufferedPort<ImageOf<PixelMono> > plotPort;
 
@@ -424,7 +425,7 @@ protected:
     /************************************************************************/
     bool respond(const Bottle &command, Bottle &reply)
     {
-        mutex.wait();
+        lock_guard<mutex> lg(mtx);
         if (command.size()>=1)
         {
             int header=command.get(0).asVocab();
@@ -607,7 +608,6 @@ protected:
         else
             reply.addVocab(Vocab::encode("nack"));
 
-        mutex.post();
         return true;
     }
 
@@ -703,10 +703,8 @@ public:
     /************************************************************************/
     bool updateModule()
     {
-        mutex.wait();
+        lock_guard<mutex> lg(mtx);
         plot();
-        mutex.post();
-
         return true;
     }
 };

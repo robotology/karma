@@ -98,7 +98,8 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <stdio.h>
+#include <cstdio>
+#include <mutex>
 #include <algorithm>
 #include <string>
 #include <deque>
@@ -461,7 +462,7 @@ protected:
     IGazeControl      *igaze;
     RpcServer          rpcPort;
     Matrix             Prj;
-    Semaphore          mutex;
+    mutex              mtx;
     FindToolTip        solver;
     Vector             solution;
     Bottle             tip;
@@ -518,9 +519,9 @@ protected:
                 logPort.write();
             }
 
-            mutex.wait();
+            mtx.lock();
             solver.addItem(p,H);
-            mutex.post();
+            mtx.unlock();
         }
 
         return true;
@@ -634,11 +635,9 @@ public:
                 //-----------------
                 case createVocab('c','l','e','a'):
                 {
-                    mutex.wait();
+                    lock_guard<mutex> lg(mtx);
                     solver.clearItems();
                     solution=0.0;
-                    mutex.post();
-
                     reply.addVocab(ack);
                     return true;
                 }
@@ -675,10 +674,8 @@ public:
                 {
                     reply.addVocab(ack);
 
-                    mutex.wait();
+                    lock_guard<mutex> lg(mtx);
                     reply.addInt((int)solver.getNumItems());
-                    mutex.post();
-
                     return true;
                 }
 
@@ -687,9 +684,9 @@ public:
                 {
                     double error;
 
-                    mutex.wait();
+                    mtx.lock();
                     bool ok=solver.solve(solution,error);
-                    mutex.post();
+                    mtx.unlock();
 
                     if (ok)
                     {
