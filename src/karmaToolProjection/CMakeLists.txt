@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.5)
 project(karmaToolProjection)
    
 find_package(ICUBcontrib REQUIRED)
-find_package(YARP 3.1.100 COMPONENTS OS sig math cv)
+find_package(YARP 3.3.0 COMPONENTS os sig math cv)
 find_package(ICUB REQUIRED)
 find_package(OpenCV REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ICUB_MODULE_PATH})
