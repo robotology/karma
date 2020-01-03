@@ -5,6 +5,8 @@ Modules for experimenting affordance learning with the iCub.
 
 [![ZenHub](https://img.shields.io/badge/Shipping_faster_with-ZenHub-435198.svg)](https://zenhub.com)
 
+![gh-pages](https://github.com/robotology/karma/workflows/GitHub%20Pages/badge.svg)
+
 ## Installation
 
 ##### Dependencies
