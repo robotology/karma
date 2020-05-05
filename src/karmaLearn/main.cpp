@@ -721,7 +721,6 @@ int main(int argc, char *argv[])
     }
 
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefaultContext("karma");
     rf.setDefaultConfigFile("karmaLearn.ini");
     rf.configure(argc,argv);

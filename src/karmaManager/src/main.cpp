@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
         return 1;
 
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefault("name","karmaManager");
     rf.setDefaultContext("karma");
     rf.setDefaultConfigFile("karmaManager.ini");

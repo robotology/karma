@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
         return 1;
 
     ResourceFinder rf;
-    rf.setVerbose(true);
     rf.setDefault("name","karmaToolProjection");
     rf.setDefault("tracking_period","30");
     rf.configure(argc,argv);
