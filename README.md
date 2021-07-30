@@ -18,7 +18,7 @@ Modules for experimenting affordance learning with the iCub.
 
 ## Documentation
 
-Online documentation is available here: [http://robotology.github.com/karma](http://robotology.github.com/karma).
+Online documentation is available here: https://robotology.github.io/karma.
 
 ## Article
 
