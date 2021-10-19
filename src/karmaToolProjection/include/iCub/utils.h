@@ -44,11 +44,11 @@ public:
 class ParticleFilter : public yarp::os::BufferedPort<yarp::os::Bottle>
 {
 protected:
-    CvPoint loc;
+    cv::Point loc;
     void onRead(yarp::os::Bottle &b);
 public:
     ParticleFilter();
-    bool getTraker(CvPoint &loc);
+    bool getTraker(cv::Point &loc);
 };
 /**********************************************************/
 class SegmentationPoint : public yarp::os::Port

@@ -177,7 +177,7 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
         ipt.y = (int) centers.at<float>(i,1);
 
         pts[i] = ipt;
-        circle( dest, ipt, 5, CV_RGB(255,255,255), CV_FILLED, CV_AA );
+        circle( dest, ipt, 5, CV_RGB(255,255,255), cv::FILLED, cv::LINE_AA );
     }
     double gradient = 0;
     double intercept = 0;
@@ -190,7 +190,7 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
         Point endPoint;
         endPoint.x = (int)(pts[1].x + (double)(pts[1].x - pts[0].x) / lenAB * 50);
         endPoint.y = (int)(pts[1].y + (double) (pts[1].y - pts[0].y) / lenAB * 50);
-        line(dest, pts[0], endPoint, Scalar(0,0,0), 2, CV_AA);
+        line(dest, pts[0], endPoint, Scalar(0,0,0), 2, cv::LINE_AA);
         gradient  = (double)( endPoint.y - pts[0].y ) / (double)( endPoint.x - pts[0].x );
         intercept = (double)( pts[0].y - (double)(pts[0].x * gradient) );
         lineDetails[1].gradient = gradient;
@@ -204,7 +204,7 @@ void Manager::processBlobs(Bottle &b, cv::Mat &dest, lineData *lineDetails)
         Point endPoint;
         endPoint.x = (int)(pts[0].x + (double)(pts[0].x - pts[1].x) / lenAB * 50);
         endPoint.y = (int)(pts[0].y + (double)(pts[0].y - pts[1].y) / lenAB * 50);
-        line(dest, pts[1], endPoint, Scalar(0,0,0), 2, CV_AA);
+        line(dest, pts[1], endPoint, Scalar(0,0,0), 2, cv::LINE_AA);
         
         gradient  = (double)( endPoint.y - pts[1].y) / (double)(endPoint.x - pts[1].x);
         intercept = (double)( endPoint.y - (double)(endPoint.x * gradient) );
@@ -312,7 +312,7 @@ Bottle Manager::processImage(Bottle &b, cv::Mat &dest, cv::Mat &clean, lineData 
                 fprintf(stdout,"0 < 3 %lf  smaller than %lf  \n", vtx[1].y, vtx[3].y);
             }
 
-            line(clean, vtx[j], vtx[(j+1)%4], Scalar(0,0,0), 2, CV_AA);
+            line(clean, vtx[j], vtx[(j+1)%4], Scalar(0,0,0), 2, cv::LINE_AA);
             gradient = ( vtx[(j+1)%4].y - vtx[j].y) / (vtx[(j+1)%4].x - vtx[j].x);
             intercept = ( vtx[j].y - (vtx[j].x *gradient) );
 
