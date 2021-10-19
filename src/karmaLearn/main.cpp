@@ -368,7 +368,7 @@ protected:
                 cv::Mat imgMat=toCvMat(img);
                 imgMat.setTo(cv::Scalar(255));
 
-                cv::putText(imgMat,plotItem,cv::Point(250,20),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
+                cv::putText(imgMat,plotItem,cv::Point(250,20),cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
 
                 double x_min=scalerIn.getLowerBoundIn();
                 double x_max=scalerIn.getUpperBoundIn();
@@ -383,25 +383,25 @@ protected:
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<x_min;
-                    cv::putText(imgMat,tag.str(),cv::Point(10,230),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(10,230),cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<x_max;
-                    cv::putText(imgMat,tag.str(),cv::Point(280,230),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(280,230),cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<y_min;
-                    cv::putText(imgMat,tag.str(),cv::Point(10,215),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(10,215),cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 {
                     ostringstream tag; tag.precision(3);
                     tag<<y_max;
-                    cv::putText(imgMat,tag.str(),cv::Point(10,20),CV_FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
+                    cv::putText(imgMat,tag.str(),cv::Point(10,20),cv::FONT_HERSHEY_SIMPLEX,0.5,cv::Scalar(0));
                 }
 
                 cv::Point pold;

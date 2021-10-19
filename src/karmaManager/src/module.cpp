@@ -445,7 +445,7 @@ Bottle Manager::executeBlobRecog(const string &objName)
             closestBlob=findClosestBlob(blobs,pointLocation);
             mutexResources.unlock();
 
-            CvPoint cog;
+            cv::Point cog;
             cog.x = closestBlob.get(0).asInt();
             cog.y = closestBlob.get(1).asInt();
             
@@ -511,7 +511,7 @@ int Manager::executeToolOnLoc()
         closestBlob=findClosestBlob(blobs,pointLocation);
         mutexResources.unlock();
 
-        CvPoint cog;
+        cv::Point cog;
         cog.x = closestBlob.get(0).asInt();
         cog.y = closestBlob.get(1).asInt();
 
@@ -566,7 +566,7 @@ Bottle Manager::findBlobLoc()
         closestBlob=findClosestBlob(blobs,pointLocation);
         mutexResources.unlock();
 
-        CvPoint cog;
+        cv::Point cog;
         cog.x = closestBlob.get(0).asInt();
         cog.y = closestBlob.get(1).asInt();
 
@@ -601,7 +601,7 @@ bool Manager::executePCLGrasp( const string &objName )
     blobs.clear();
     bool invalid    = false;
     bool isGrasped  = false;
-    CvPoint locObj; 
+    cv::Point locObj; 
     Bottle result;
     result.clear();
 
@@ -769,7 +769,7 @@ int Manager::executeToolSearchOnLoc( const string &objName )
     blobs=getBlobs();
     // failure handling
     Bottle result;
-    CvPoint objLoc;
+    cv::Point objLoc;
 
     int objIndex = 0;
 
@@ -1276,7 +1276,7 @@ int Manager::executeOnLoc(bool shouldTrain)
         closestBlob=findClosestBlob(blobs,pointLocation);
         mutexResources.unlock();
         
-        CvPoint cog;
+        cv::Point cog;
         cog.x = closestBlob.get(0).asInt();
         cog.y = closestBlob.get(1).asInt();
         
@@ -1370,7 +1370,7 @@ int Manager::executeOnLoc(bool shouldTrain)
             rpcMotorKarma.write(karmaMotor, KarmaReply);
             fprintf(stdout,"action is %s:\n",KarmaReply.toString().c_str());
 
-            CvPoint finalPoint;
+            cv::Point finalPoint;
             if (particleFilter.getTraker(finalPoint))
             {
                 while(finalPoint.x <1 && finalPoint.x >320 && finalPoint.y <1 && finalPoint.y >240)
@@ -1420,7 +1420,7 @@ double Manager::getBlobLenght(const Bottle &blobs, const int i)
     double dist = 0;
     if ((i>=0) && (i<blobs.size()))
     {
-        CvPoint tl,br;
+        cv::Point tl,br;
         Bottle *item=blobs.get(i).asList();
         if (item==NULL)
             return dist;
@@ -1464,7 +1464,7 @@ Bottle Manager::getOffset( Bottle &closestBlob, double actionOrient, Vector &ini
     
     int axe1 = 0;
     int axe2 = 0;
-    CvPoint cog;
+    cv::Point cog;
     cog.x = closestBlob.get(0).asInt();
     cog.y = closestBlob.get(1).asInt();
     
@@ -1482,7 +1482,7 @@ Bottle Manager::getOffset( Bottle &closestBlob, double actionOrient, Vector &ini
         finalOrient -= orient;
     }
 
-    CvPoint pxls;
+    cv::Point pxls;
     Vector offPos;
     fprintf(stdout,"The 3Dpos is %lf %lf %lf \n",initPos[0], initPos[1], initPos[2]);
     
@@ -1528,7 +1528,7 @@ Bottle Manager::classify(const Bottle &blobs, int index)
     mutexResources.unlock();
     //Bottle &toReturn = gotMils.addList();
     
-    CvPoint cog;
+    cv::Point cog;
     cog=getBlobCOG(blobs,index);
     Bottle &tmpLine = gotMils.addList();
     Bottle &tmpMils = tmpLine.addList();
@@ -1587,7 +1587,7 @@ double Manager::getPeriod()
 }
 
 /**********************************************************/
-bool Manager::get3DPosition(const CvPoint &point, Vector &x)
+bool Manager::get3DPosition(const cv::Point &point, Vector &x)
 {
     Bottle cmdMotor,replyMotor;
     cmdMotor.addVocab(Vocab::encode("get"));
@@ -1634,12 +1634,12 @@ Bottle Manager::getBlobs()
     return lastBlobs;
 }
 /**********************************************************/
-CvPoint Manager::getBlobCOG(const Bottle &blobs, const int i)
+cv::Point Manager::getBlobCOG(const Bottle &blobs, const int i)
 {
-    CvPoint cog=cvPoint(RET_INVALID,RET_INVALID);
+    cv::Point cog=cv::Point(RET_INVALID,RET_INVALID);
     if ((i>=0) && (i<blobs.size()))
     {
-        CvPoint tl,br;
+        cv::Point tl,br;
         Bottle *item=blobs.get(i).asList();
         if (item==NULL)
             return cog;
@@ -1655,7 +1655,7 @@ CvPoint Manager::getBlobCOG(const Bottle &blobs, const int i)
     return cog;
 }
 /**********************************************************/
-Bottle Manager::findClosestBlob(const Bottle &blobs, const CvPoint &loc)
+Bottle Manager::findClosestBlob(const Bottle &blobs, const cv::Point &loc)
 {
     int ret=RET_INVALID;
     double min_d2=std::numeric_limits<double>::max();
@@ -1663,7 +1663,7 @@ Bottle Manager::findClosestBlob(const Bottle &blobs, const CvPoint &loc)
     pointReturn.clear();
     for (int i=0; i<blobs.size(); i++)
     {
-        CvPoint cog=getBlobCOG(blobs,i);
+        cv::Point cog=getBlobCOG(blobs,i);
         if ((cog.x==RET_INVALID) || (cog.y==RET_INVALID))
             continue;
 
@@ -1677,7 +1677,7 @@ Bottle Manager::findClosestBlob(const Bottle &blobs, const CvPoint &loc)
             ret=i;
         }
     }
-    CvPoint cog=getBlobCOG( blobs, ret );
+    cv::Point cog=getBlobCOG( blobs, ret );
     pointReturn.addDouble(cog.x);           //cog x
     pointReturn.addDouble(cog.y);           //cog y
     pointReturn.addInt(ret);                //index of blob

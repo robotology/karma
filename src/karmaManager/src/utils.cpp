@@ -40,7 +40,7 @@ void ParticleFilter::onRead(Bottle &target)
     }
 }
 /**********************************************************/
-bool ParticleFilter::getTraker(CvPoint &loc)
+bool ParticleFilter::getTraker(cv::Point &loc)
 {
     loc=this->loc;
     return true;
@@ -76,7 +76,7 @@ PointedLocation::PointedLocation()
     timeout=2.0;
 }
 /**********************************************************/
-bool PointedLocation::getLoc(CvPoint &loc)
+bool PointedLocation::getLoc(cv::Point &loc)
 {
     double t0=Time::now();
 

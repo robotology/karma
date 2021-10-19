@@ -43,7 +43,7 @@ struct blobsData
         int         index;
         double      lenght;
         double      vdrawError;
-        CvPoint     posistion;
+        cv::Point     posistion;
         double      bestDistance;
         double      bestAngle;
         std::string name;
@@ -75,7 +75,7 @@ protected:
 
     std::mutex                  mutexResources;     //mutex for ressources
     bool                        pointGood;          //boolean for if got a point location
-    CvPoint                     pointLocation;      //x and y of the pointed location
+    cv::Point                     pointLocation;      //x and y of the pointed location
     bool                        init;
     yarp::os::Bottle            lastBlobs;
     yarp::os::Bottle            lastTool;
@@ -89,11 +89,11 @@ protected:
     std::map<int, double>       randActions;
 
     yarp::os::Bottle            getBlobs();
-    CvPoint                     getBlobCOG(const yarp::os::Bottle &blobs, const int i);
+    cv::Point                     getBlobCOG(const yarp::os::Bottle &blobs, const int i);
     double                      getBlobLenght(const yarp::os::Bottle &blobs, const int i);
 
-    bool                        get3DPosition(const CvPoint &point, yarp::sig::Vector &x);
-    yarp::os::Bottle            findClosestBlob(const yarp::os::Bottle &blobs, const CvPoint &loc);
+    bool                        get3DPosition(const cv::Point &point, yarp::sig::Vector &x);
+    yarp::os::Bottle            findClosestBlob(const yarp::os::Bottle &blobs, const cv::Point &loc);
     int                         processHumanCmd(const yarp::os::Bottle &cmd, yarp::os::Bottle &b);
     int                         executeOnLoc(bool shouldTrain);
     int                         executeToolOnLoc();

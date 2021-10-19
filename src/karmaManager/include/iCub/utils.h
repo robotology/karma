@@ -33,11 +33,11 @@ class Manager;  //forward declaration
 class ParticleFilter : public yarp::os::BufferedPort<yarp::os::Bottle>
 {
 protected:
-    CvPoint loc;
+    cv::Point loc;
     void onRead(yarp::os::Bottle &b);
 public:
     ParticleFilter();
-    bool getTraker(CvPoint &loc);
+    bool getTraker(cv::Point &loc);
 };
 /**********************************************************/
 class SegmentationPoint : public yarp::os::Port
@@ -49,7 +49,7 @@ public:
 class PointedLocation : public yarp::os::BufferedPort<yarp::os::Bottle>
 {
 protected:
-    CvPoint loc;
+    cv::Point loc;
     double  rxTime;
     double  timeout;
 
@@ -57,7 +57,7 @@ protected:
 
 public:
     PointedLocation();
-    bool getLoc(CvPoint &loc);
+    bool getLoc(cv::Point &loc);
 };
 
 #endif
