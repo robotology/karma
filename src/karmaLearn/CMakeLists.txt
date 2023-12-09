@@ -20,6 +20,6 @@ set(folder_source main.cpp)
 source_group("Source Files" FILES ${folder_source})
 
 add_executable(${PROJECT_NAME} ${folder_source})
-target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} learningMachine)
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ${OpenCV_LIBS} learningMachine)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
